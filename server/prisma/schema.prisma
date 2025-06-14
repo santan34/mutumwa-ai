@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// ========================
+/// Public Schema (Global Tables)
+/// These models manage cross-tenant data.
+/// ========================
+
+model SystemAdmin {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  name          String
+  isSuperAdmin  Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Organisation {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  domain     String    @unique
+  sector     String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  plans OrganisationPlan[]
+  apiUsage ApiUsage[]
+}
+
+model Plan {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  description String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  features PlanFeature[]
+  organisations OrganisationPlan[]
+}
+
+model Feature {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  endpointPath String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  plans PlanFeature[]
+  apiUsage ApiUsage[]
+}
+
+enum RatePeriod {
+  second
+  minute
+  hour
+  day
+  month
+}
+
+model PlanFeature {
+  planId    String     @db.Uuid
+  featureId String     @db.Uuid
+  rateLimit Int?
+  period    RatePeriod?
+  createdAt DateTime   @default(now())
+
+  plan    Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([planId, featureId])
+}
+
+model OrganisationPlan {
+  id                String    @id @default(uuid()) @db.Uuid
+  organisationId    String    @db.Uuid
+  planId            String    @db.Uuid
+  apiKey            String    @unique
+  apiKeyLastUsedAt  DateTime?
+  startedAt         DateTime  @default(now())
+  expiresAt         DateTime
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  plan         Plan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
+model ApiUsage {
+  organisationId String   @db.Uuid
+  featureId      String   @db.Uuid
+  periodStart    DateTime
+  usageCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  feature      Feature      @relation(fields: [featureId], references: [id])
+
+  @@id([organisationId, featureId, periodStart])
+}
+
+model OrganizationalPermissions {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model WorkspacePermissions {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
