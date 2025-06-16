@@ -1,11 +1,11 @@
 // services/organisation.service.ts
-import { EntityManager } from '@mikro-orm/core';
-import { Organisation } from '../entities/public/Organisation';
+import { EntityManager } from "@mikro-orm/core";
+import { Organisation } from "../entities/public/Organisation";
 
 export class OrganisationServiceError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'OrganisationServiceError';
+    this.name = "OrganisationServiceError";
   }
 }
 
@@ -21,12 +21,17 @@ export const OrganisationService = {
       return await em.find(Organisation, { deletedAt: null });
     } catch (error) {
       throw new OrganisationServiceError(
-        `Failed to fetch organisations: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to fetch organisations: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
 
-  create: async (em: EntityManager, data: CreateOrganisationData): Promise<Organisation> => {
+  create: async (
+    em: EntityManager,
+    data: CreateOrganisationData
+  ): Promise<Organisation> => {
     try {
       const org = em.create(Organisation, {
         ...data,
@@ -36,23 +41,32 @@ export const OrganisationService = {
       await em.persistAndFlush(org);
       return org;
     } catch (error) {
-      if (error instanceof Error && error.message.includes('duplicate key')) {
-        throw new OrganisationServiceError('An organisation with this domain already exists');
+      if (error instanceof Error && error.message.includes("duplicate key")) {
+        throw new OrganisationServiceError(
+          "An organisation with this domain already exists"
+        );
       }
       throw new OrganisationServiceError(
-        `Failed to create organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to create organisation: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
 
   getById: async (em: EntityManager, id: string): Promise<Organisation> => {
     try {
-      const org = await em.findOne(Organisation, { id, deletedAt: null });
-      if (!org) throw new OrganisationServiceError(`Organisation with id ${id} not found`);
+      const org = await em.findOne(Organisation, { id });
+      if (!org)
+        throw new OrganisationServiceError(
+          `Organisation with id ${id} not found`
+        );
       return org;
     } catch (error) {
       throw new OrganisationServiceError(
-        `Failed to fetch organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to fetch organisation: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -69,7 +83,9 @@ export const OrganisationService = {
       return org;
     } catch (error) {
       throw new OrganisationServiceError(
-        `Failed to update organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update organisation: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -79,7 +95,7 @@ export const OrganisationService = {
   },
 
   activate: async (em: EntityManager, id: string): Promise<Organisation> => {
-    return OrganisationService.update(em, id, { deletedAt: undefined });
+    return OrganisationService.update(em, id, { deletedAt: null });
   },
 
   getSoftDeleted: async (em: EntityManager): Promise<Organisation[]> => {
@@ -87,7 +103,9 @@ export const OrganisationService = {
       return await em.find(Organisation, { deletedAt: { $ne: null } });
     } catch (error) {
       throw new OrganisationServiceError(
-        `Failed to fetch deleted organisations: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to fetch deleted organisations: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
