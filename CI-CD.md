@@ -48,7 +48,6 @@ The project uses a comprehensive CI/CD pipeline that handles:
 
 - **Deploy Staging**: Deploys to staging environment (develop branch)
 - **Deploy Production**: Deploys to production environment (main branch)
-- **Security Scan**: Runs Trivy vulnerability scanner
 
 ### 2. Code Quality (`.github/workflows/code-quality.yml`)
 
@@ -248,3 +247,252 @@ docker-compose -f docker-compose.prod.yml up -d
 - Dependencies are regularly updated and audited
 - CodeQL performs security analysis on every push
 - Branch protection prevents direct pushes to main branch
+
+
+# GitHub Secrets Configuration Guide
+
+This guide will help you set up all the required secrets for the GitHub Actions CI/CD pipeline.
+
+## Access GitHub Secrets Settings
+
+1. **Navigate to your repository on GitHub**
+2. **Go to Settings → Secrets and variables → Actions**
+3. **Click "New repository secret" for each secret below**
+
+## Required Secrets
+
+### 🔐 **Production Database Secrets**
+
+```bash
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_secure_password_here
+POSTGRES_DB=mutumwa_ai_prod
+
+# Full Database Connection String
+DATABASE_URL=postgresql://postgres:your_secure_password_here@your-db-host:5432/mutumwa_ai_prod
+```
+
+### 🔗 **Redis Configuration**
+
+```bash
+# Redis Connection
+REDIS_URL=redis://your-redis-host:6379
+# Or if Redis has authentication:
+# REDIS_URL=redis://username:password@your-redis-host:6379
+```
+
+### 🌐 **Frontend Configuration**
+
+```bash
+# API URL for production frontend
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+# Or for development/staging:
+# NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### 📊 **SonarCloud (Optional but Recommended)**
+
+```bash
+# Get this token from https://sonarcloud.io/account/security/
+SONAR_TOKEN=your_sonarcloud_token_here
+```
+
+### 🚀 **Deployment Secrets (Optional)**
+
+```bash
+# If using custom deployment server
+DEPLOY_HOST=your-server-ip-or-domain
+DEPLOY_USER=deployment-user
+DEPLOY_KEY=your-ssh-private-key
+
+# Docker Hub (if using Docker Hub instead of GitHub Container Registry)
+DOCKER_USERNAME=your_dockerhub_username
+DOCKER_PASSWORD=your_dockerhub_password
+```
+
+## Step-by-Step Configuration
+
+### 1. Database Secrets
+
+**For PostgreSQL on cloud providers:**
+
+- **AWS RDS**: Use the endpoint from your RDS instance
+- **Google Cloud SQL**: Use the connection string from Cloud SQL
+- **Azure Database**: Use the connection string from Azure Portal
+- **Local/Self-hosted**: Use your server's IP and port
+
+**Example DATABASE_URL formats:**
+```bash
+# AWS RDS
+DATABASE_URL=postgresql://postgres:password@your-db.region.rds.amazonaws.com:5432/mutumwa_ai_prod
+
+# Google Cloud SQL
+DATABASE_URL=postgresql://postgres:password@your-project:region:instance/mutumwa_ai_prod
+
+# Self-hosted
+DATABASE_URL=postgresql://postgres:password@192.168.1.100:5432/mutumwa_ai_prod
+```
+
+### 2. SonarCloud Setup (Optional)
+
+1. **Visit https://sonarcloud.io/**
+2. **Sign in with your GitHub account**
+3. **Go to My Account → Security**
+4. **Generate a new token**
+5. **Copy the token and add it as `SONAR_TOKEN` secret**
+
+### 3. Frontend URL Configuration
+
+Set `NEXT_PUBLIC_API_URL` based on your deployment:
+
+```bash
+# Production API
+NEXT_PUBLIC_API_URL=https://api.mutumwa-ai.com
+
+# Staging API
+NEXT_PUBLIC_API_URL=https://staging-api.mutumwa-ai.com
+
+# Development (if deploying dev environment)
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+## Environment-Specific Secrets
+
+You can also set environment-specific secrets by creating **Environment secrets**:
+
+### Creating Environments
+
+1. **Go to Settings → Environments**
+2. **Click "New environment"**
+3. **Create environments: `staging`, `production`**
+4. **Add environment-specific secrets**
+
+### Environment Variables
+
+**Staging Environment:**
+```bash
+DATABASE_URL=postgresql://postgres:password@staging-db:5432/mutumwa_ai_staging
+NEXT_PUBLIC_API_URL=https://staging-api.mutumwa-ai.com
+REDIS_URL=redis://staging-redis:6379
+```
+
+**Production Environment:**
+```bash
+DATABASE_URL=postgresql://postgres:password@prod-db:5432/mutumwa_ai_prod
+NEXT_PUBLIC_API_URL=https://api.mutumwa-ai.com
+REDIS_URL=redis://prod-redis:6379
+```
+
+## Security Best Practices
+
+### ✅ Do's
+- Use strong, unique passwords
+- Rotate secrets regularly
+- Use environment-specific secrets
+- Enable two-factor authentication on GitHub
+- Use read-only database users where possible
+
+### ❌ Don'ts
+- Never commit secrets to code
+- Don't use the same password across environments
+- Don't share secrets in plain text
+- Don't use production secrets in staging
+
+## Validating Your Configuration
+
+After setting up secrets, you can validate them by:
+
+1. **Push a commit to trigger the workflow**
+2. **Check the Actions tab for any failures**
+3. **Review workflow logs for connection issues**
+
+## Common Issues and Solutions
+
+### Database Connection Issues
+```bash
+# Check if your database allows connections from GitHub Actions IPs
+# You may need to whitelist GitHub's IP ranges or use a VPN
+
+# Test connection string format
+# Make sure there are no special characters that need URL encoding
+```
+
+### Redis Connection Issues
+```bash
+# Ensure Redis is accessible from external connections
+# Check if Redis requires authentication
+# Verify the port (default is 6379)
+```
+
+### Frontend API Issues
+```bash
+# Make sure NEXT_PUBLIC_API_URL includes the protocol (http/https)
+# Verify the URL is accessible from the internet
+# Check CORS configuration on your API
+```
+
+## Quick Setup Script
+
+Here's a script to help you set up local environment variables for testing:
+
+```bash
+#!/bin/bash
+# File: setup-env.sh
+
+echo "Setting up environment variables for local testing..."
+
+# Create .env file for server
+cat > server/.env << EOF
+NODE_ENV=development
+PORT=3001
+DATABASE_URL=postgresql://postgres:password@localhost:5432/mutumwa_ai_dev
+REDIS_URL=redis://localhost:6379
+EOF
+
+# Create .env.local file for frontend
+cat > frontend/.env.local << EOF
+NEXT_PUBLIC_API_URL=http://localhost:3001
+EOF
+
+# Create .env file for collector
+cat > collector/.env << EOF
+NODE_ENV=development
+SERVER_PORT=8888
+EOF
+
+echo "Environment files created!"
+echo "Update the values in each .env file as needed."
+```
+
+## Troubleshooting
+
+### Check Secret Access
+```bash
+# In your workflow, you can temporarily add this step to debug:
+- name: Debug Secrets
+  run: |
+    echo "Database URL length: ${#DATABASE_URL}"
+    echo "Redis URL length: ${#REDIS_URL}"
+    # Never echo the actual secret values!
+```
+
+### Workflow Debugging
+```bash
+# Enable debug logging in GitHub Actions
+# Go to Settings → Secrets and variables → Actions
+# Add these secrets:
+ACTIONS_STEP_DEBUG=true
+ACTIONS_RUNNER_DEBUG=true
+```
+
+## Getting Help
+
+If you encounter issues:
+
+1. **Check the Actions tab** for detailed error logs
+2. **Review the CI-CD.md** documentation
+3. **Test connections locally** using the same credentials
+4. **Check service status** of your database and Redis providers
+
+Remember: Never share your actual secret values. Always use the GitHub Secrets interface to store sensitive information securely.

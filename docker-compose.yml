@@ -41,6 +41,9 @@ services:
     environment:
       - NODE_ENV=production
       - SERVER_PORT=8888
+      - STORAGE_DIR=/app/collector/storage
+      - HOT_DIR=/app/collector/hotdir
+      - COLLECTOR_DIR=/app/collector
     volumes:
       - ./collector/storage:/app/collector/storage
       - ./collector/hotdir:/app/collector/hotdir

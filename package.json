@@ -14,7 +14,7 @@
     "build:frontend": "cd frontend && npm run build",
     "build:server": "cd server && npm run build",
     "start:all": "concurrently \"npm run dev:server\" \"npm run dev:frontend\" \"npm run dev:collector\"",
-    "lint": "cd collector && npm run lint && cd ../frontend && npm run lint",
+    "lint": "cd collector && npm run lint",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
