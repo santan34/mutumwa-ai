@@ -234,7 +234,6 @@ CREATE DATABASE mutumwa_ai_dev;
 
 ## Development
 
-- \`npm run lint\` - Run linting
 - \`npm run build:frontend\` - Build frontend for production
 - \`npm run build:server\` - Build server for production
 

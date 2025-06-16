@@ -1,4 +1,4 @@
-require("dotenv").config({ path: ".env.development" });
+import "dotenv/config";
 import { Options } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 
