@@ -1,3 +1,4 @@
+import "dotenv/config"; // Load environment variables
 import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
@@ -48,7 +49,7 @@ app.use(
   }
 );
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

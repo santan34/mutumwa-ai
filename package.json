@@ -1,0 +1,33 @@
+{
+  "name": "mutumwa-ai",
+  "version": "1.0.0",
+  "description": "Multi-component AI application with document collector, frontend, and server",
+  "private": true,
+  "engines": {
+    "node": ">=18.12.1"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "install:all": "npm install && cd collector &&  npm install --legacy-peer-deps && cd ../frontend && npm install && cd ../server && npm install && cd ..",
+    "dev:server": "cd server && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev", 
+    "dev:collector": "cd collector && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:server": "cd server && npm run build",
+    "start:all": "concurrently \"npm run dev:server\" \"npm run dev:frontend\" \"npm run dev:collector\"",
+    "lint": "cd collector && npm run lint && cd ../frontend && npm run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "keywords": [
+    "ai",
+    "document-processing", 
+    "nextjs",
+    "express",
+    "typescript"
+  ],
+  "author": "Mutumwa AI Team",
+  "license": "MIT"
+}
