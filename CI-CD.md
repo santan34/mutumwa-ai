@@ -48,7 +48,6 @@ The project uses a comprehensive CI/CD pipeline that handles:
 
 - **Deploy Staging**: Deploys to staging environment (develop branch)
 - **Deploy Production**: Deploys to production environment (main branch)
-- **Security Scan**: Runs Trivy vulnerability scanner
 
 ### 2. Code Quality (`.github/workflows/code-quality.yml`)
 
