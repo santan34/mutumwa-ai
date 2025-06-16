@@ -2,6 +2,7 @@ import { MikroORM, Options } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { Organisation } from "../entities/public/Organisation";
 import "dotenv/config";
+
 const config: Options<PostgreSqlDriver> = {
   entities: ["./dist/entities"],
   dbName: process.env.DB_NAME,
