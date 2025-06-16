@@ -1,0 +1,159 @@
+name: Docker Compose Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create production docker-compose
+      run: |
+        cat > docker-compose.prod.yml << 'EOF'
+        version: '3.8'
+
+        services:
+          postgres:
+            image: postgres:15
+            container_name: mutumwa-ai-postgres-prod
+            environment:
+              POSTGRES_USER: \${POSTGRES_USER}
+              POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+              POSTGRES_DB: \${POSTGRES_DB}
+            ports:
+              - "5432:5432"
+            volumes:
+              - postgres_data_prod:/var/lib/postgresql/data
+            healthcheck:
+              test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER}"]
+              interval: 10s
+              timeout: 5s
+              retries: 5
+            restart: unless-stopped
+
+          redis:
+            image: redis:7-alpine
+            container_name: mutumwa-ai-redis-prod
+            ports:
+              - "6379:6379"
+            volumes:
+              - redis_data_prod:/data
+            healthcheck:
+              test: ["CMD", "redis-cli", "ping"]
+              interval: 10s
+              timeout: 5s
+              retries: 5
+            restart: unless-stopped
+
+          collector:
+            image: \${REGISTRY}/\${IMAGE_NAME}-collector:latest
+            container_name: mutumwa-ai-collector-prod
+            ports:
+              - "8888:8888"
+            environment:
+              - NODE_ENV=production
+              - SERVER_PORT=8888
+            volumes:
+              - collector_storage_prod:/app/collector/storage
+              - collector_hotdir_prod:/app/collector/hotdir
+            depends_on:
+              postgres:
+                condition: service_healthy
+              redis:
+                condition: service_healthy
+            restart: unless-stopped
+
+          server:
+            image: \${REGISTRY}/\${IMAGE_NAME}-server:latest
+            container_name: mutumwa-ai-server-prod
+            ports:
+              - "3001:3001"
+            environment:
+              - NODE_ENV=production
+              - PORT=3001
+              - DATABASE_URL=\${DATABASE_URL}
+              - REDIS_URL=\${REDIS_URL}
+            depends_on:
+              postgres:
+                condition: service_healthy
+              redis:
+                condition: service_healthy
+            restart: unless-stopped
+
+          frontend:
+            image: \${REGISTRY}/\${IMAGE_NAME}-frontend:latest
+            container_name: mutumwa-ai-frontend-prod
+            ports:
+              - "3000:3000"
+            environment:
+              - NODE_ENV=production
+              - NEXT_PUBLIC_API_URL=\${NEXT_PUBLIC_API_URL}
+            depends_on:
+              - server
+            restart: unless-stopped
+
+        volumes:
+          postgres_data_prod:
+          redis_data_prod:
+          collector_storage_prod:
+          collector_hotdir_prod:
+        EOF
+
+    - name: Deploy with Docker Compose
+      run: |
+        # Pull latest images
+        docker-compose -f docker-compose.prod.yml pull
+        
+        # Stop existing containers
+        docker-compose -f docker-compose.prod.yml down
+        
+        # Start new containers
+        docker-compose -f docker-compose.prod.yml up -d
+        
+        # Wait for services to be healthy
+        timeout 300 bash -c 'until docker-compose -f docker-compose.prod.yml ps | grep -q "healthy"; do sleep 5; done'
+        
+        # Run any migrations or setup scripts
+        docker-compose -f docker-compose.prod.yml exec -T server npm run migrate || echo "No migrations to run"
+      env:
+        REGISTRY: ${{ env.REGISTRY }}
+        IMAGE_NAME: ${{ env.IMAGE_NAME }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        REDIS_URL: ${{ secrets.REDIS_URL }}
+        NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+    - name: Health check
+      run: |
+        # Check if all services are running
+        docker-compose -f docker-compose.prod.yml ps
+        
+        # Test endpoints
+        curl -f http://localhost:3000 || exit 1
+        curl -f http://localhost:3001/health || echo "Health endpoint not available"
+        curl -f http://localhost:8888/accepts || exit 1

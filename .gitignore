@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.yarn/
+.pnp.*
+
+# Environment files
+.env*
+!.env.example
+
+# Development
+.next/
+dist/
+build/
+*.log
+*.log.*
+
+# Database
+*.db
+*.sqlite
+
+# Storage and temporary files
+collector/storage/documents/
+collector/storage/tmp/
+collector/storage/models/
+!collector/storage/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+coverage/
+.nyc_output/
