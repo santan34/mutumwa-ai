@@ -1,0 +1,195 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the previous tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
+        
+        if [ -n "$PREVIOUS_TAG" ]; then
+          echo "## Changes since $PREVIOUS_TAG" > CHANGELOG.md
+          git log --pretty=format:"* %s (%h)" $PREVIOUS_TAG..HEAD >> CHANGELOG.md
+        else
+          echo "## Initial Release" > CHANGELOG.md
+          git log --pretty=format:"* %s (%h)" >> CHANGELOG.md
+        fi
+        
+        # Set changelog as output
+        echo 'CHANGELOG<<EOF' >> $GITHUB_OUTPUT
+        cat CHANGELOG.md >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: false
+        prerelease: false
+
+  build-and-release:
+    needs: create-release
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service: [collector, frontend, server]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+        tags: |
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./${{ matrix.service }}
+        file: ./${{ matrix.service }}/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  create-deployment-package:
+    needs: [create-release, build-and-release]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create deployment package
+      run: |
+        # Create deployment directory
+        mkdir -p deployment
+        
+        # Copy docker-compose files
+        cp docker-compose.yml deployment/
+        cp .env.example deployment/.env.template
+        
+        # Create production docker-compose with release tags
+        TAG=${GITHUB_REF#refs/tags/}
+        sed "s|build:|# build:|g" docker-compose.yml > deployment/docker-compose.prod.yml
+        sed -i "s|context: \./collector|image: ghcr.io/${{ github.repository }}-collector:${TAG}|g" deployment/docker-compose.prod.yml
+        sed -i "s|context: \./frontend|image: ghcr.io/${{ github.repository }}-frontend:${TAG}|g" deployment/docker-compose.prod.yml
+        sed -i "s|context: \./server|image: ghcr.io/${{ github.repository }}-server:${TAG}|g" deployment/docker-compose.prod.yml
+        sed -i "s|dockerfile: Dockerfile||g" deployment/docker-compose.prod.yml
+        
+        # Create deployment script
+        cat > deployment/deploy.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "Deploying Mutumwa AI v${TAG}"
+        
+        # Copy environment template if .env doesn't exist
+        if [ ! -f .env ]; then
+          cp .env.template .env
+          echo "Please edit .env file with your configuration"
+          exit 1
+        fi
+        
+        # Pull latest images
+        docker-compose -f docker-compose.prod.yml pull
+        
+        # Stop existing services
+        docker-compose -f docker-compose.prod.yml down
+        
+        # Start services
+        docker-compose -f docker-compose.prod.yml up -d
+        
+        echo "Deployment complete!"
+        echo "Frontend: http://localhost:3000"
+        echo "API: http://localhost:3001"
+        echo "Collector: http://localhost:8888"
+        EOF
+        
+        chmod +x deployment/deploy.sh
+        
+        # Create README
+        cat > deployment/README.md << 'EOF'
+        # Mutumwa AI Deployment Package
+        
+        This package contains everything needed to deploy Mutumwa AI in production.
+        
+        ## Quick Start
+        
+        1. Copy `.env.template` to `.env` and configure your environment variables
+        2. Run `./deploy.sh` to start the application
+        
+        ## Files
+        
+        - `docker-compose.prod.yml` - Production Docker Compose configuration
+        - `.env.template` - Environment variables template
+        - `deploy.sh` - Deployment script
+        
+        ## Requirements
+        
+        - Docker and Docker Compose
+        - Ports 3000, 3001, 5432, 6379, and 8888 available
+        EOF
+        
+        # Create archive
+        tar -czf mutumwa-ai-deployment-${GITHUB_REF#refs/tags/}.tar.gz deployment/
+
+    - name: Upload deployment package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./mutumwa-ai-deployment-${{ github.ref_name }}.tar.gz
+        asset_name: mutumwa-ai-deployment-${{ github.ref_name }}.tar.gz
+        asset_content_type: application/gzip
