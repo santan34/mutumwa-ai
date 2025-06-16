@@ -1,155 +1,93 @@
-import { prisma } from "../../prisma/client";
-import { IOrganisation } from "../interfaces/organisation.interface";
-import { Prisma } from "../../generated/prisma";
+// services/organisation.service.ts
+import { EntityManager } from '@mikro-orm/core';
+import { Organisation } from '../entities/public/Organisation';
 
 export class OrganisationServiceError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "OrganisationServiceError";
+    this.name = 'OrganisationServiceError';
   }
 }
 
+interface CreateOrganisationData {
+  name: string;
+  domain: string;
+  sector?: string;
+}
+
 export const OrganisationService = {
-  getAll: async (): Promise<IOrganisation[]> => {
+  getAll: async (em: EntityManager): Promise<Organisation[]> => {
     try {
-      return await prisma.organisation.findMany({
-        where: { deletedAt: null },
-      });
+      return await em.find(Organisation, { deletedAt: null });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
       throw new OrganisationServiceError(
-        `Failed to fetch organisations: ${message}`
+        `Failed to fetch organisations: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   },
 
-  create: async (data: IOrganisation): Promise<IOrganisation> => {
+  create: async (em: EntityManager, data: CreateOrganisationData): Promise<Organisation> => {
     try {
-      return await prisma.organisation.create({ data });
+      const org = em.create(Organisation, {
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await em.persistAndFlush(org);
+      return org;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2002") {
-          throw new OrganisationServiceError(
-            "An organisation with this name already exists"
-          );
-        }
+      if (error instanceof Error && error.message.includes('duplicate key')) {
+        throw new OrganisationServiceError('An organisation with this domain already exists');
       }
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
       throw new OrganisationServiceError(
-        `Failed to create organisation: ${message}`
+        `Failed to create organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   },
 
-  getById: async (id: string): Promise<IOrganisation> => {
+  getById: async (em: EntityManager, id: string): Promise<Organisation> => {
     try {
-      const organisation = await prisma.organisation.findFirst({
-        where: { id, deletedAt: null },
-      });
-
-      if (!organisation) {
-        throw new OrganisationServiceError(
-          `Organisation with id ${id} not found`
-        );
-      }
-
-      return organisation;
+      const org = await em.findOne(Organisation, { id, deletedAt: null });
+      if (!org) throw new OrganisationServiceError(`Organisation with id ${id} not found`);
+      return org;
     } catch (error) {
-      if (error instanceof OrganisationServiceError) throw error;
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
       throw new OrganisationServiceError(
-        `Failed to fetch organisation: ${message}`
+        `Failed to fetch organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   },
 
   update: async (
+    em: EntityManager,
     id: string,
-    data: Partial<IOrganisation>
-  ): Promise<IOrganisation> => {
+    data: Partial<Organisation>
+  ): Promise<Organisation> => {
     try {
-      return await prisma.organisation.update({
-        where: { id, deletedAt: null },
-        // Ensure we only update fields of active organisations
-        data,
-      });
+      const org = await OrganisationService.getById(em, id);
+      em.assign(org, { ...data, updatedAt: new Date() });
+      await em.flush();
+      return org;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2025") {
-          throw new OrganisationServiceError(
-            `Organisation with id ${id} not found`
-          );
-        }
-      }
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
       throw new OrganisationServiceError(
-        `Failed to update organisation: ${message}`
+        `Failed to update organisation: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   },
 
-  softDelete: async (id: string): Promise<IOrganisation> => {
-    try {
-      return await prisma.organisation.update({
-        where: { id },
-        data: { deletedAt: new Date() },
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2025") {
-          throw new OrganisationServiceError(
-            `Organisation with id ${id} not found`
-          );
-        }
-      }
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      throw new OrganisationServiceError(
-        `Failed to delete organisation: ${message}`
-      );
-    }
+  softDelete: async (em: EntityManager, id: string): Promise<Organisation> => {
+    return OrganisationService.update(em, id, { deletedAt: new Date() });
   },
 
-  activate: async (id: string): Promise<IOrganisation> => {
-    try {
-      return await prisma.organisation.update({
-        where: { id },
-        data: { deletedAt: null },
-      });
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2025") {
-          throw new OrganisationServiceError(
-            `Organisation with id ${id} not found`
-          );
-        }
-      }
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
-      throw new OrganisationServiceError(
-        `Failed to activate organisation: ${message}`
-      );
-    }
+  activate: async (em: EntityManager, id: string): Promise<Organisation> => {
+    return OrganisationService.update(em, id, { deletedAt: undefined });
   },
 
-  getSoftDeleted: async (): Promise<IOrganisation[]> => {
+  getSoftDeleted: async (em: EntityManager): Promise<Organisation[]> => {
     try {
-      return await prisma.organisation.findMany({
-        where: {
-          deletedAt: {
-            not: null,
-          },
-        },
-      });
+      return await em.find(Organisation, { deletedAt: { $ne: null } });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error occurred";
       throw new OrganisationServiceError(
-        `Failed to fetch deleted organisations: ${message}`
+        `Failed to fetch deleted organisations: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   },
