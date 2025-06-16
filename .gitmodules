@@ -1,0 +1,3 @@
+[submodule "mutumwa-collector"]
+	path = mutumwa-collector
+	url = https://github.com/afrinity-tech/mutumwa-collector.git
