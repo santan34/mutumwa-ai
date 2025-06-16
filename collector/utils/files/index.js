@@ -133,11 +133,15 @@ async function wipeCollectorStorage() {
     fs.readdir(directory, (err, files) => {
       if (err) resolve();
 
-      for (const file of files) {
-        if (file === "__HOTDIR__.md") continue;
-        try {
-          fs.rmSync(path.join(directory, file));
-        } catch {}
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (file === "__HOTDIR__.md") continue;
+          try {
+            fs.rmSync(path.join(directory, file));
+          } catch {}
+        }
+      } else {
+        console.error('Expected files to be an array, got:', files);
       }
       resolve();
     });
@@ -148,11 +152,15 @@ async function wipeCollectorStorage() {
     fs.readdir(directory, (err, files) => {
       if (err) resolve();
 
-      for (const file of files) {
-        if (file === ".placeholder") continue;
-        try {
-          fs.rmSync(path.join(directory, file));
-        } catch {}
+      if (Array.isArray(files)) {
+        for (const file of files) {
+          if (file === ".placeholder") continue;
+          try {
+            fs.rmSync(path.join(directory, file));
+          } catch {}
+        }
+      } else {
+        console.error('Expected files to be an array, got:', files);
       }
       resolve();
     });
