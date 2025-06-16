@@ -76,16 +76,17 @@ jobs:
         done
 
     - name: Build frontend
-      run: |
-        cd frontend
-        npm run build      env:
+      run: |        cd frontend
+        npm run build
+      env:
         NEXT_PUBLIC_API_URL: http://localhost:3001
 
     - name: Build server
       run: |
         cd server
         npm run build
-      env:        DB_HOST: localhost
+      env:
+        DB_HOST: localhost
         DB_PORT: 5432
         DB_NAME: mutumwa_ai_test
         DB_USER: postgres
