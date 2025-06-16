@@ -1,9 +1,9 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { v4 as uuidv4 } from "uuid";
 
-@Entity({ tableName: 'organisations', schema: 'public' })
+@Entity({ tableName: "organisations", schema: "public" })
 export class Organisation {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: "uuid" })
   id: string = uuidv4();
 
   @Property()
@@ -15,12 +15,12 @@ export class Organisation {
   @Property({ nullable: true })
   sector?: string;
 
-  @Property({ name: 'created_at' })
+  @Property({ name: "created_at" })
   createdAt: Date = new Date();
 
-  @Property({ name: 'updated_at' })
+  @Property({ name: "updated_at" })
   updatedAt: Date = new Date();
 
-  @Property({ name: 'deleted_at', nullable: true })
-  deletedAt?: Date;
+  @Property({ name: "deleted_at", nullable: true })
+  deletedAt?: Date | null; // Add null as possible type
 }
