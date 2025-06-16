@@ -1,0 +1,124 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service: ['.', 'collector', 'frontend', 'server']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Update dependencies for ${{ matrix.service }}
+      run: |
+        cd ${{ matrix.service }}
+        
+        # Check if package.json exists
+        if [ -f "package.json" ]; then
+          echo "Updating dependencies in ${{ matrix.service }}"
+          
+          # Update dependencies
+          npm update
+          
+          # Check for vulnerabilities and auto-fix
+          npm audit fix || true
+          
+          # Special handling for collector's legacy peer deps
+          if [ "${{ matrix.service }}" = "collector" ]; then
+            npm install --legacy-peer-deps
+          fi
+        else
+          echo "No package.json found in ${{ matrix.service }}"
+        fi
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies in ${{ matrix.service }}'
+        title: 'chore: Update dependencies in ${{ matrix.service }}'
+        body: |
+          Automated dependency update for ${{ matrix.service }}
+          
+          This PR updates npm dependencies to their latest compatible versions and fixes any security vulnerabilities.
+          
+          - Updated dependencies using `npm update`
+          - Fixed security vulnerabilities using `npm audit fix`
+          
+          Please review the changes and ensure all tests pass before merging.
+        branch: chore/update-deps-${{ matrix.service }}-${{ github.run_number }}
+        delete-branch: true
+
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd collector && npm ci --legacy-peer-deps
+        cd ../frontend && npm ci
+        cd ../server && npm ci
+
+    - name: Run security audit
+      run: |
+        echo "## Security Audit Report" > audit-report.md
+        echo "" >> audit-report.md
+        
+        for dir in "." "collector" "frontend" "server"; do
+          echo "### $dir" >> audit-report.md
+          cd $dir
+          npm audit --audit-level moderate --json > audit.json || true
+          
+          if [ -s audit.json ]; then
+            echo "Found vulnerabilities in $dir:" >> ../audit-report.md
+            npm audit --audit-level moderate >> ../audit-report.md || true
+          else
+            echo "No vulnerabilities found in $dir" >> ../audit-report.md
+          fi
+          
+          echo "" >> ../audit-report.md
+          cd - > /dev/null
+        done
+
+    - name: Create Security Issue
+      uses: actions/github-script@v7
+      if: failure()
+      with:
+        script: |
+          const fs = require('fs');
+          const auditReport = fs.readFileSync('audit-report.md', 'utf8');
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Security vulnerabilities detected',
+            body: auditReport,
+            labels: ['security', 'dependencies']
+          });

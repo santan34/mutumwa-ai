@@ -25,6 +25,62 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  collector:
+    build:
+      context: ./collector
+      dockerfile: Dockerfile
+    container_name: mutumwa-ai-collector
+    ports:
+      - "8888:8888"
+    environment:
+      - NODE_ENV=production
+      - SERVER_PORT=8888
+    volumes:
+      - ./collector/storage:/app/collector/storage
+      - ./collector/hotdir:/app/collector/hotdir
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: mutumwa-ai-server
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/mutumwa_ai_dev
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mutumwa-ai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://server:3001
+    depends_on:
+      - server
+    restart: unless-stopped
 
 volumes:
   postgres_data:
