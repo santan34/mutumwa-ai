@@ -3,11 +3,17 @@ import {
   OrganisationService,
   OrganisationServiceError,
 } from "../services/organisation.service";
+import { EntityManager } from "@mikro-orm/core";
+
+// Add a RequestWithEm interface to extend the Express Request
+interface RequestWithEm extends Request {
+  em: EntityManager;
+}
 
 export const OrganisationController = {
-  getAll: async (_req: Request, res: Response) => {
+  getAll: async (req: RequestWithEm, res: Response) => {
     try {
-      const organisations = await OrganisationService.getAll();
+      const organisations = await OrganisationService.getAll(req.em);
       return res.status(200).json({
         status: "success",
         data: organisations,
@@ -21,9 +27,9 @@ export const OrganisationController = {
     }
   },
 
-  create: async (req: Request, res: Response) => {
+  create: async (req: RequestWithEm, res: Response) => {
     try {
-      const organisation = await OrganisationService.create(req.body);
+      const organisation = await OrganisationService.create(req.em, req.body);
       return res.status(201).json({
         status: "success",
         data: organisation,
@@ -42,9 +48,12 @@ export const OrganisationController = {
     }
   },
 
-  getById: async (req: Request, res: Response) => {
+  getById: async (req: RequestWithEm, res: Response) => {
     try {
-      const organisation = await OrganisationService.getById(req.params.id);
+      const organisation = await OrganisationService.getById(
+        req.em,
+        req.params.id
+      );
       return res.status(200).json({
         status: "success",
         data: organisation,
@@ -63,9 +72,10 @@ export const OrganisationController = {
     }
   },
 
-  update: async (req: Request, res: Response) => {
+  update: async (req: RequestWithEm, res: Response) => {
     try {
       const organisation = await OrganisationService.update(
+        req.em,
         req.params.id,
         req.body
       );
@@ -87,9 +97,9 @@ export const OrganisationController = {
     }
   },
 
-  softDelete: async (req: Request, res: Response) => {
+  softDelete: async (req: RequestWithEm, res: Response) => {
     try {
-      await OrganisationService.softDelete(req.params.id);
+      await OrganisationService.softDelete(req.em, req.params.id);
       return res.status(200).json({
         status: "success",
         message: "Organisation deleted successfully",
@@ -108,9 +118,12 @@ export const OrganisationController = {
     }
   },
 
-  activate: async (req: Request, res: Response) => {
+  activate: async (req: RequestWithEm, res: Response) => {
     try {
-      const organisation = await OrganisationService.activate(req.params.id);
+      const organisation = await OrganisationService.activate(
+        req.em,
+        req.params.id
+      );
       return res.status(200).json({
         status: "success",
         data: organisation,
@@ -129,9 +142,9 @@ export const OrganisationController = {
     }
   },
 
-  getSoftDeleted: async (_req: Request, res: Response) => {
+  getSoftDeleted: async (req: RequestWithEm, res: Response) => {
     try {
-      const organisations = await OrganisationService.getSoftDeleted();
+      const organisations = await OrganisationService.getSoftDeleted(req.em);
       return res.status(200).json({
         status: "success",
         data: organisations,

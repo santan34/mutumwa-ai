@@ -2,6 +2,7 @@ import { Router } from "express";
 import { RequestHandler, Request, Response } from "express";
 import { OrganisationController } from "../controllers/organisation.controller";
 import { validateRequest } from "../middleware/validation.middleware";
+import { EntityManager } from "@mikro-orm/core";
 import {
   createOrganisationSchema,
   updateOrganisationSchema,
@@ -52,13 +53,19 @@ import {
 
 const router = Router();
 
+// Add RequestWithEm interface
+interface RequestWithEm extends Request {
+  em: EntityManager;
+}
+
 // Create type-safe wrapper for controller methods
 const wrapController = (
-  fn: (req: Request, res: Response) => Promise<Response>
+  fn: (req: RequestWithEm, res: Response) => Promise<Response>
 ): RequestHandler => {
   return async (req, res, next) => {
     try {
-      await fn(req, res);
+      // Cast the regular request to RequestWithEm since middleware adds 'em'
+      await fn(req as RequestWithEm, res);
     } catch (error) {
       next(error);
     }
