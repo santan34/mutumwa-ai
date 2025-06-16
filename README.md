@@ -84,5 +84,5 @@ CREATE DATABASE mutumwa_ai_dev;
 
 1. Create a feature branch
 2. Make your changes
-3. Test locally with `npm run start:all`
+3. Test locally with `npm start:all`
 4. Submit a pull request
