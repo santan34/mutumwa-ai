@@ -10,7 +10,7 @@ x-database-variables: &database-variables
 
 services:
   postgres:
-    image: 'postgres:16-alpine'
+    image: 'postgres:15'
     container_name: mutumwa-ai-postgres
     volumes:
       - 'postgres_data:/var/lib/postgresql/data'
