@@ -5,13 +5,13 @@ import swaggerUi from "swagger-ui-express";
 import { specs } from "./config/swagger";
 import { organisationRoutes } from "./routes/organisation.routes";
 import { entityManagerMiddleware } from "./middleware/entityManager.middleware";
-import { initializeORM } from "./config/database"; 
+import { initializeORM } from "./config/database";
 
 const app = express();
 
 // CORS configuration
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:5173"], // Add your frontend URL
+  origin: ["http://localhost:3000"], // Add your frontend URL
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -20,14 +20,16 @@ const corsOptions = {
 const port = process.env.PORT || 3001;
 
 // Initialize MikroORM before starting the server
-initializeORM().then(() => {
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+initializeORM()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server is running on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to initialize ORM:", err);
+    process.exit(1);
   });
-}).catch((err) => {
-  console.error("Failed to initialize ORM:", err);
-  process.exit(1);
-});
 
 // Middleware
 app.use(cors(corsOptions));
