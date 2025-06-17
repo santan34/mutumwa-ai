@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost.afrainity.com",
+        url: "http://localhost:3001",
         description: "Development server",
       },
     ],

@@ -37,9 +37,8 @@ initializeORM()
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(entityManagerMiddleware);
-console.log("Tenant Resolver");
+
 app.use(tenantResolverMiddleware);
-console.log("Tenant Resolver Exited");
 
 // Serve Swagger UI static files without CORS
 app.use(
