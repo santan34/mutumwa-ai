@@ -1,42 +1,50 @@
 import { Router, Request, Response, RequestHandler } from "express";
-import { PlanController } from "../controllers/plan.controller";
+import { FeatureController } from "../controllers/feature.controller";
 import { validateRequest } from "../middleware/validation.middleware";
 import {
-  createPlanSchema,
-  updatePlanSchema,
-  planIdParamSchema,
-} from "../validations/plan.validation";
+  createFeatureSchema,
+  updateFeatureSchema,
+  featureIdParamSchema,
+} from "../validations/feature.validation";
 import { EntityManager } from "@mikro-orm/core";
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Plan:
+ *     Feature:
  *       type: object
  *       properties:
  *         id:
  *           type: string
  *           format: uuid
- *           description: The unique identifier for the plan
+ *           description: The unique identifier for the feature
  *         name:
  *           type: string
- *           description: The name of the plan
+ *           description: The name of the feature
+ *         endpointPath:
+ *           type: string
+ *           description: The API endpoint path for this feature
  *         description:
  *           type: string
- *           description: Detailed description of what the plan offers
+ *           description: Detailed description of the feature
  *         createdAt:
  *           type: string
  *           format: date-time
- *           description: Timestamp when the plan was created
+ *           description: Timestamp when the feature was created
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           description: Timestamp when the plan was last updated
+ *           description: Timestamp when the feature was last updated
+ *         deletedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the feature was soft deleted (if applicable)
  *       example:
  *         id: "123e4567-e89b-12d3-a456-426614174000"
- *         name: "Premium Plan"
- *         description: "Access to all premium features"
+ *         name: "API Access"
+ *         endpointPath: "/api/v1/access"
+ *         description: "Access to core API functionality"
  *         createdAt: "2025-01-01T00:00:00.000Z"
  *         updatedAt: "2025-01-01T00:00:00.000Z"
  *   responses:
@@ -52,7 +60,7 @@ import { EntityManager } from "@mikro-orm/core";
  *                 example: error
  *               message:
  *                 type: string
- *                 example: Plan with id 123 not found
+ *                 example: Feature with id 123 not found
  *     ServerError:
  *       description: Internal server error
  *       content:
@@ -66,6 +74,155 @@ import { EntityManager } from "@mikro-orm/core";
  *               message:
  *                 type: string
  *                 example: Internal server error
+ *
+ * /api/features:
+ *   get:
+ *     summary: Get all features
+ *     description: Retrieve a list of all active features (non-deleted)
+ *     tags: [Features]
+ *     responses:
+ *       200:
+ *         description: List of features retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Feature'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ *   post:
+ *     summary: Create a new feature
+ *     description: Create a new feature with specified details
+ *     tags: [Features]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - endpointPath
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Data Export"
+ *               endpointPath:
+ *                 type: string
+ *                 example: "/api/v1/export"
+ *               description:
+ *                 type: string
+ *                 example: "Export data in various formats"
+ *     responses:
+ *       201:
+ *         description: Feature created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Feature'
+ *       400:
+ *         description: Invalid request body
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ *
+ * /api/features/{id}:
+ *   parameters:
+ *     - in: path
+ *       name: id
+ *       required: true
+ *       schema:
+ *         type: string
+ *         format: uuid
+ *       description: The feature ID
+ *   get:
+ *     summary: Get a feature by ID
+ *     description: Retrieve a specific feature by its ID (if not deleted)
+ *     tags: [Features]
+ *     responses:
+ *       200:
+ *         description: Feature retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Feature'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ *   patch:
+ *     summary: Update a feature
+ *     description: Update an existing feature's details
+ *     tags: [Features]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               endpointPath:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Feature updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Feature'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ *   delete:
+ *     summary: Soft delete a feature
+ *     description: Soft delete an existing feature (sets deletedAt timestamp)
+ *     tags: [Features]
+ *     responses:
+ *       200:
+ *         description: Feature soft deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Feature deleted successfully
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
  */
 
 const router = Router();
@@ -87,245 +244,36 @@ const {
   create,
   getById,
   update,
-  delete: deletePlan,
-} = Object.entries(PlanController).reduce(
+  delete: deleteFeature,
+} = Object.entries(FeatureController).reduce(
   (acc, [key, handler]) => ({
     ...acc,
     [key]: wrapController(handler),
   }),
-  {} as Record<keyof typeof PlanController, RequestHandler>
+  {} as Record<keyof typeof FeatureController, RequestHandler>
 );
 
-/**
- * @swagger
- * /api/plans:
- *   get:
- *     summary: Get all plans
- *     description: Retrieve a list of all available plans
- *     tags: [Plans]
- *     responses:
- *       200:
- *         description: List of plans retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Plan'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- *   post:
- *     summary: Create a new plan
- *     description: Create a new subscription plan
- *     tags: [Plans]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - description
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Basic Plan"
- *               description:
- *                 type: string
- *                 example: "Basic features for starters"
- *     responses:
- *       201:
- *         description: Plan created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   $ref: '#/components/schemas/Plan'
- *       400:
- *         description: Invalid request body
- *       500:
- *         $ref: '#/components/responses/ServerError'
- *
- * /api/plans/{id}:
- *   parameters:
- *     - in: path
- *       name: id
- *       required: true
- *       schema:
- *         type: string
- *         format: uuid
- *       description: The plan ID
- *   get:
- *     summary: Get a plan by ID
- *     description: Retrieve a specific plan by its ID
- *     tags: [Plans]
- *     responses:
- *       200:
- *         description: Plan retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   $ref: '#/components/schemas/Plan'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- *   patch:
- *     summary: Update a plan
- *     description: Update an existing plan's details
- *     tags: [Plans]
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *     responses:
- *       200:
- *         description: Plan updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 data:
- *                   $ref: '#/components/schemas/Plan'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- *   delete:
- *     summary: Delete a plan
- *     description: Delete an existing plan
- *     tags: [Plans]
- *     responses:
- *       200:
- *         description: Plan deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 message:
- *                   type: string
- *                   example: Plan deleted successfully
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/ServerError'
- */
 router.get("/", getAll);
-
-/**
- * @swagger
- * /api/plans:
- *   post:
- *     summary: Create a new plan
- *     tags: [Plans]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - description
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- */
-router.post("/", validateRequest(createPlanSchema) as RequestHandler, create);
-
-/**
- * @swagger
- * /api/plans/{id}:
- *   get:
- *     summary: Get a plan by ID
- *     tags: [Plans]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- */
+router.post(
+  "/",
+  validateRequest(createFeatureSchema) as RequestHandler,
+  create
+);
 router.get(
   "/:id",
-  validateRequest(planIdParamSchema, "params") as RequestHandler,
+  validateRequest(featureIdParamSchema, "params") as RequestHandler,
   getById
 );
-
-/**
- * @swagger
- * /api/plans/{id}:
- *   patch:
- *     summary: Update a plan
- *     tags: [Plans]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- */
 router.patch(
   "/:id",
-  validateRequest(planIdParamSchema, "params") as RequestHandler,
-  validateRequest(updatePlanSchema) as RequestHandler,
+  validateRequest(featureIdParamSchema, "params") as RequestHandler,
+  validateRequest(updateFeatureSchema) as RequestHandler,
   update
 );
-
-/**
- * @swagger
- * /api/plans/{id}:
- *   delete:
- *     summary: Delete a plan
- *     tags: [Plans]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- */
 router.delete(
   "/:id",
-  validateRequest(planIdParamSchema, "params") as RequestHandler,
-  deletePlan
+  validateRequest(featureIdParamSchema, "params") as RequestHandler,
+  deleteFeature
 );
 
-export const planRoutes = router;
+export const featureRoutes = router;

@@ -8,6 +8,7 @@ import { tenantResolverMiddleware } from "./middleware/tenantResolver.middleware
 import { organisationRoutes } from "./routes/organisation.routes";
 import { systemAdminRoutes } from "./routes/systemAdmin.routes";
 import { planRoutes } from "./routes/plan.routes";
+import { featureRoutes } from "./routes/feature.routes";
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use(
 app.use("/api/organisations", organisationRoutes);
 app.use("/api/system-admins", systemAdminRoutes);
 app.use("/api/plans", planRoutes);
+app.use("/api/features", featureRoutes);
 
 // Error handling middleware
 app.use(
