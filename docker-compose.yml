@@ -75,18 +75,17 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: mutumwa-ai-server
-    ports:
+      container_name: mutumwa-ai-server    
+      ports:
       - "${SERVER_PORT:-3001}:3001"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=3001
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-mutumwa_ai_dev}
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:password@postgres:5432/mutumwa_ai_dev}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - DB_NAME=${DB_NAME:-${POSTGRES_DB:-mutumwa_ai_dev}}
-      - DB_USER=${DB_USER:-${POSTGRES_USER:-postgres}}
-      - DB_PASSWORD=${DB_PASSWORD:-${POSTGRES_PASSWORD:-password}}
+      - DB_NAME=${DB_NAME:-mutumwa_ai_dev}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
       - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=${DB_PORT:-5432}
     depends_on:
