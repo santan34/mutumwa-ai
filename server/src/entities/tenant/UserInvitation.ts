@@ -1,11 +1,12 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { User } from './User';
 import { Role } from './Role';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity({ tableName: 'user_invitations' })
 export class UserInvitation {
   @PrimaryKey({ type: 'uuid' })
-  id!: string;
+  id: string = uuidv4();
 
   @Property()
   email!: string;

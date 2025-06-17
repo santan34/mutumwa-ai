@@ -1,10 +1,11 @@
 import { Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/core';
 import { User } from './User';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity({ tableName: 'profiles' })
 export class Profile {
   @PrimaryKey({ type: 'uuid' })
-  id!: string;
+  id: string = uuidv4();
 
   @OneToOne(() => User)
   user!: User;

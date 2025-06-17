@@ -1,11 +1,12 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { UserInvitation } from './UserInvitation';
 import { Workspace } from './Workspace';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity({ tableName: 'invitation_workspace_assignments' })
 export class InvitationWorkspaceAssignment {
   @PrimaryKey({ type: 'uuid' })
-  id!: string;
+  id: string = uuidv4();
 
   @ManyToOne(() => UserInvitation)
   invitation!: UserInvitation;

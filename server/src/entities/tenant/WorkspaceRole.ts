@@ -1,10 +1,11 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { Workspace } from './Workspace';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity({ tableName: 'workspace_roles' })
 export class WorkspaceRole {
   @PrimaryKey({ type: 'uuid' })
-  id!: string;
+  id: string = uuidv4();
 
   @ManyToOne(() => Workspace)
   workspace!: Workspace;

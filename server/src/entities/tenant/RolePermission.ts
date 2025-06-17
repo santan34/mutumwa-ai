@@ -1,13 +1,14 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { Role } from './Role';
+import { OrganisationalPermission }  from '../public/OrganisationalPermission';
 
 @Entity({ tableName: 'role_permissions' })
 export class RolePermission {
   @ManyToOne(() => Role, { primary: true })
   role!: Role;
 
-  @Property({ name: 'permission_id', type: 'uuid' })
-  permissionId!: string;
+  @ManyToOne(() => OrganisationalPermission, { primary: true})
+  permissionId!: OrganisationalPermission;
 
   @Property({ name: 'is_allowed' })
   isAllowed: boolean = true;
