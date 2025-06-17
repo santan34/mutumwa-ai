@@ -1,5 +1,6 @@
 import { EntityManager } from "@mikro-orm/core";
 import { User } from "../entities/tenant/User";
+import { createTenantSchema } from '../utils/createTenantSchema';
 
 export class TenantServiceError extends Error {
   constructor(message: string) {
@@ -10,6 +11,7 @@ export class TenantServiceError extends Error {
 
 interface CreateTenantData {
   email: string;
+  org_id: string; // Add org_id to the data interface
 }
 
 export const TenantService = {
@@ -31,6 +33,7 @@ export const TenantService = {
         updatedAt: new Date(),
       });
       await em.persistAndFlush(user);
+      await createTenantSchema(data.org_id); // Use org_id from organisation table
       return user;
     } catch (error) {
       throw new TenantServiceError(
