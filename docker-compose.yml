@@ -24,6 +24,12 @@ services:
       timeout: 20s
       retries: 10
     restart: unless-stopped
+    labels:
+     - coolify.managed=true
+     - coolify.type=service
+     - coolify.serviceName=postgresql
+     - coolify.service.subType=database
+     - coolify.service.subName=postgresql
 
   redis:
     image: redis:7-alpine
