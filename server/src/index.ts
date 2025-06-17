@@ -5,9 +5,9 @@ import swaggerUi from "swagger-ui-express";
 import { specs } from "./config/swagger";
 import { organisationRoutes } from "./routes/organisation.routes";
 import { tenantRoutes } from "./routes/tenant.routes";
-import { entityManagerMiddleware } from "./middleware/entityManager.middleware";
 import { initializeORM } from "./config/database";
 import { tenantResolverMiddleware } from "./middleware/tenantResolver.middleware";
+import { systemAdminRoutes } from "./routes/systemAdmin.routes";
 
 const app = express();
 
@@ -36,8 +36,6 @@ initializeORM()
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(entityManagerMiddleware);
-
 app.use(tenantResolverMiddleware);
 
 // Serve Swagger UI static files without CORS
@@ -53,7 +51,7 @@ app.use(
 
 // Routes
 app.use("/api/organisations", organisationRoutes);
-app.use("/api/tenants", tenantRoutes);
+app.use("/api/system-admins", systemAdminRoutes);
 
 // Error handling middleware
 app.use(

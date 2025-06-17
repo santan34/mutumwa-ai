@@ -1,20 +1,20 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { v4 as uuidv4 } from "uuid";
 
-@Entity({ tableName: 'plans', schema: 'public' })
+@Entity({ tableName: "plans", schema: "public" })
 export class Plan {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: "uuid" })
   id: string = uuidv4();
 
   @Property()
   name!: string;
 
-  @Property({ nullable: true })
+  @Property()
   description?: string;
 
-  @Property({ name: 'created_at' })
+  @Property({ name: "created_at" })
   createdAt: Date = new Date();
 
-  @Property({ name: 'updated_at' })
+  @Property({ name: "updated_at" })
   updatedAt: Date = new Date();
 }
