@@ -6,7 +6,7 @@ export class Organisation {
   @PrimaryKey({ type: "uuid" })
   id: string = uuidv4();
 
-  @Property()
+  @Property({ unique: true })
   name!: string;
 
   @Property({ unique: true })
