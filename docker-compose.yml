@@ -1,36 +1,27 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: mutumwa-ai-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-mutumwa_ai_dev}
-    # Removed external port mapping for internal service
-    expose:
-      - "5432"
+  postgresql:
+    image: 'postgres:16-alpine'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - 'postgresql-data:/var/lib/postgresql/data'
+    environment:
+      - POSTGRES_USER=$SERVICE_USER_POSTGRES
+      - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
+      - 'POSTGRES_DB=${POSTGRES_DB:-mutumwa_ai}'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - mutumwa-network
-    labels:
-      - "coolify.managed=true"
-      - "coolify.type=database"
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
 
   redis:
     image: redis:7-alpine
     container_name: mutumwa-ai-redis
-    # Removed external port mapping for internal service
-    expose:
-      - "6379"
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,21 +29,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-    networks:
-      - mutumwa-network
-    labels:
-      - "coolify.managed=true"
-      - "coolify.type=cache"
+
   collector:
     build:
       context: ./collector
       dockerfile: Dockerfile
     container_name: mutumwa-ai-collector
     ports:
-      - "${COLLECTOR_PORT:-8888}:8888"
+      - "8888:8888"
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=production
       - SERVER_PORT=8888
       - STORAGE_DIR=/app/collector/storage
       - HOT_DIR=/app/collector/hotdir
@@ -61,78 +47,45 @@ services:
       - ./collector/storage:/app/collector/storage
       - ./collector/hotdir:/app/collector/hotdir
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - postgres
+      - redis
     restart: unless-stopped
-    networks:
-      - mutumwa-network
-    labels:
-      - "coolify.managed=true"
-      - "coolify.type=service"
+
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: mutumwa-ai-server
     ports:
-      - "${SERVER_PORT:-3001}:3001"
+      - "3001:3001"
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=production
       - PORT=3001
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-mutumwa_ai_dev}
+      - DB_USER=$SERVICE_USER_POSTGRES
+      - DB_PASSWORD=$SERVICE_PASSWORD_POSTGRES
+      - 'DB_NAME=${POSTGRES_DB:-mutumwa_ai}'
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-mutumwa_ai_dev}}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - DB_NAME=${DB_NAME:-${POSTGRES_DB:-mutumwa_ai_dev}}
-      - DB_USER=${DB_USER:-${POSTGRES_USER:-postgres}}
-      - DB_PASSWORD=${DB_PASSWORD:-${POSTGRES_PASSWORD:-password}}
-      - DB_HOST=${DB_HOST:-postgres}
-      - DB_PORT=${DB_PORT:-5432}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      - mutumwa-network
-    labels:
-      - "coolify.managed=true"
-      - "coolify.type=application"
-      - "traefik.enable=true"
-      - "traefik.http.routers.mutumwa-server.rule=Host(`${SERVER_DOMAIN:-localhost}`)"
-      - "traefik.http.services.mutumwa-server.loadbalancer.server.port=3001"
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: mutumwa-ai-frontend
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://server:3001}
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://server:3001
     depends_on:
       - server
     restart: unless-stopped
-    networks:
-      - mutumwa-network
-    labels:
-      - "coolify.managed=true"
-      - "coolify.type=application"
-      - "traefik.enable=true"
-      - "traefik.http.routers.mutumwa-frontend.rule=Host(`${FRONTEND_DOMAIN:-localhost}`)"
-      - "traefik.http.services.mutumwa-frontend.loadbalancer.server.port=3000"
-
-networks:
-  mutumwa-network:
-    driver: bridge
-    name: mutumwa-network
 
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local
