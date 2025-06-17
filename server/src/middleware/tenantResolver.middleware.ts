@@ -31,7 +31,6 @@ export const tenantResolverMiddleware = async (
 
     req.em = tenantEm;
     req.tenant = org;
-    req.domain = domain; // optional if you want to keep it for downstream
 
     next();
   } catch (err) {
