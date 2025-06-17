@@ -1,0 +1,21 @@
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
+import { UserInvitation } from './UserInvitation';
+import { User } from './User';
+
+@Entity({ tableName: 'invitation_audit_log' })
+export class InvitationAuditLog {
+  @PrimaryKey({ type: 'uuid' })
+  id!: string;
+
+  @ManyToOne(() => UserInvitation)
+  invitation!: UserInvitation;
+
+  @Property()
+  action!: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  performedByUser?: User;
+
+  @Property({ name: 'created_at' })
+  createdAt: Date = new Date();
+}
