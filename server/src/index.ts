@@ -4,6 +4,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./config/swagger";
 import { organisationRoutes } from "./routes/organisation.routes";
+import { tenantRoutes } from "./routes/tenant.routes";
 import { entityManagerMiddleware } from "./middleware/entityManager.middleware";
 import { initializeORM } from "./config/database"; 
 
@@ -47,6 +48,7 @@ app.use(
 
 // Routes
 app.use("/api/organisations", organisationRoutes);
+app.use("/api/tenants", tenantRoutes);
 
 // Error handling middleware
 app.use(
