@@ -1,21 +1,16 @@
-version: '3.8'
-
-x-common-variables: &common-variables
-  NODE_ENV: ${NODE_ENV:-production}
-
-x-database-variables: &database-variables
-  POSTGRES_USER: ${DB_USER:-mutumwa_admin}
-  POSTGRES_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-  POSTGRES_DB: ${DB_NAME:-mutumwa_ai}
-
 services:
   postgres:
-    image: postgres:15
-    container_name: mutumwa-ai-postgres
+    image: 'postgres:15'
+    container_name: postgres-ro4ksgc44g8gk0owoc0o4sk4-210257293970
     volumes:
-      - 'postgres_data:/var/lib/postgresql/data'
+      - 'ro4ksgc44g8gk0owoc0o4sk4_postgres-data:/var/lib/postgresql/data'
     environment:
-      <<: *database-variables
+      POSTGRES_USER: '${DB_USER:-mutumwa_admin}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
+      POSTGRES_DB: '${DB_NAME:-mutumwa_ai}'
+      COOLIFY_BRANCH: '"main"'
+      COOLIFY_RESOURCE_UUID: ro4ksgc44g8gk0owoc0o4sk4
+      COOLIFY_CONTAINER_NAME: postgres-ro4ksgc44g8gk0owoc0o4sk4-210257293970
     healthcheck:
       test:
         - CMD-SHELL
@@ -34,15 +29,27 @@ services:
       - coolify.database.version=15
       - coolify.backup.enabled=true
       - coolify.monitoring.enabled=true
+      - coolify.version=4.0.0-beta.418
+      - coolify.name=postgres-ro4ksgc44g8gk0owoc0o4sk4-210257293970
+      - coolify.resourceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.projectName=mutumwaai
+      - coolify.serviceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+    networks:
+      ro4ksgc44g8gk0owoc0o4sk4: null
   redis:
-    image: redis:7-alpine
-    container_name: mutumwa-ai-redis
+    image: 'redis:7-alpine'
+    container_name: redis-ro4ksgc44g8gk0owoc0o4sk4-210257306297
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
-      - redis_data:/data
+      - 'ro4ksgc44g8gk0owoc0o4sk4_redis-data:/data'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+        - CMD
+        - redis-cli
+        - ping
       interval: 10s
       timeout: 5s
       retries: 5
@@ -57,24 +64,42 @@ services:
       - coolify.database.version=7-alpine
       - coolify.monitoring.enabled=true
       - coolify.port=6379
-
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.418
+      - coolify.name=redis-ro4ksgc44g8gk0owoc0o4sk4-210257306297
+      - coolify.resourceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.projectName=mutumwaai
+      - coolify.serviceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+    networks:
+      ro4ksgc44g8gk0owoc0o4sk4: null
+    environment:
+      COOLIFY_BRANCH: '"main"'
+      COOLIFY_RESOURCE_UUID: ro4ksgc44g8gk0owoc0o4sk4
+      COOLIFY_CONTAINER_NAME: redis-ro4ksgc44g8gk0owoc0o4sk4-210257306297
   collector:
     build:
       context: ./collector
       dockerfile: Dockerfile
-    container_name: mutumwa-ai-collector
+    container_name: collector-ro4ksgc44g8gk0owoc0o4sk4-210257310697
     ports:
-      - "${COLLECTOR_PORT:-8888}:8888"
+      - '${COLLECTOR_PORT:-8888}:8888'
     environment:
-      <<: *common-variables
+      NODE_ENV: '${NODE_ENV:-production}'
       SERVER_PORT: 8888
       STORAGE_DIR: /app/collector/storage
       HOT_DIR: /app/collector/hotdir
       COLLECTOR_DIR: /app/collector
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: 'redis://redis:6379'
+      COOLIFY_BRANCH: '"main"'
+      COOLIFY_RESOURCE_UUID: ro4ksgc44g8gk0owoc0o4sk4
+      COOLIFY_CONTAINER_NAME: collector-ro4ksgc44g8gk0owoc0o4sk4-210257310697
+      COOLIFY_URL: 'http://collector4gssswcgc808wg8c08.62.72.19.27.sslip.io'
+      COOLIFY_FQDN: collector4gssswcgc808wg8c08.62.72.19.27.sslip.io
     volumes:
-      - ./collector/storage:/app/collector/storage
-      - ./collector/hotdir:/app/collector/hotdir
+      - '/data/coolify/applications/ro4ksgc44g8gk0owoc0o4sk4/collector/storage:/app/collector/storage'
+      - '/data/coolify/applications/ro4ksgc44g8gk0owoc0o4sk4/collector/hotdir:/app/collector/hotdir'
     depends_on:
       - postgres
       - redis
@@ -91,22 +116,49 @@ services:
       - coolify.environment=production
       - coolify.framework=nodejs
       - coolify.logging.enabled=true
+      - coolify.version=4.0.0-beta.418
+      - coolify.name=collector-ro4ksgc44g8gk0owoc0o4sk4-210257310697
+      - coolify.resourceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.projectName=mutumwaai
+      - coolify.serviceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-collector.entryPoints=http
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-collector.middlewares=gzip
+      - 'traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-collector.rule=Host(`collector4gssswcgc808wg8c08.62.72.19.27.sslip.io`) && PathPrefix(`/`)'
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=http://collector4gssswcgc808wg8c08.62.72.19.27.sslip.io'
+      - caddy_ingress_network=ro4ksgc44g8gk0owoc0o4sk4
+    networks:
+      ro4ksgc44g8gk0owoc0o4sk4: null
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: mutumwa-ai-server
+    container_name: server-ro4ksgc44g8gk0owoc0o4sk4-210257324966
     ports:
-      - "${SERVER_PORT:-3001}:3001"
+      - '${SERVER_PORT:-3001}:3001'
     environment:
-      <<: *common-variables
+      NODE_ENV: '${NODE_ENV:-production}'
       PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: ${DB_USER:-mutumwa_admin}
-      DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-      DB_NAME: ${DB_NAME:-mutumwa_ai}
-      REDIS_URL: redis://redis:6379
+      DB_USER: '${DB_USER:-mutumwa_admin}'
+      DB_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
+      DB_NAME: '${DB_NAME:-mutumwa_ai}'
+      REDIS_URL: 'redis://redis:6379'
+      COOLIFY_BRANCH: '"main"'
+      COOLIFY_RESOURCE_UUID: ro4ksgc44g8gk0owoc0o4sk4
+      COOLIFY_CONTAINER_NAME: server-ro4ksgc44g8gk0owoc0o4sk4-210257324966
+      COOLIFY_URL: 'http://serverw4g4wgow80kokg0ssc.62.72.19.27.sslip.io'
+      COOLIFY_FQDN: serverw4g4wgow80kokg0ssc.62.72.19.27.sslip.io
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,16 +178,44 @@ services:
       - coolify.framework=nodejs
       - coolify.logging.enabled=true
       - coolify.buildType=dockerfile
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.418
+      - coolify.name=server-ro4ksgc44g8gk0owoc0o4sk4-210257324966
+      - coolify.resourceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.projectName=mutumwaai
+      - coolify.serviceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-server.entryPoints=http
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-server.middlewares=gzip
+      - 'traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-server.rule=Host(`serverw4g4wgow80kokg0ssc.62.72.19.27.sslip.io`) && PathPrefix(`/`)'
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=http://serverw4g4wgow80kokg0ssc.62.72.19.27.sslip.io'
+      - caddy_ingress_network=ro4ksgc44g8gk0owoc0o4sk4
+    networks:
+      ro4ksgc44g8gk0owoc0o4sk4: null
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: mutumwa-ai-frontend
+    container_name: frontend-ro4ksgc44g8gk0owoc0o4sk4-210257331049
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - '${FRONTEND_PORT:-3000}:3000'
     environment:
-      <<: *common-variables
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NODE_ENV: '${NODE_ENV:-production}'
+      NEXT_PUBLIC_API_URL: '${NEXT_PUBLIC_API_URL:-http://localhost:3001}'
+      COOLIFY_BRANCH: '"main"'
+      COOLIFY_RESOURCE_UUID: ro4ksgc44g8gk0owoc0o4sk4
+      COOLIFY_CONTAINER_NAME: frontend-ro4ksgc44g8gk0owoc0o4sk4-210257331049
+      COOLIFY_URL: 'http://frontendss848o08gcks8oko80.62.72.19.27.sslip.io'
+      COOLIFY_FQDN: frontendss848o08gcks8oko80.62.72.19.27.sslip.io
     depends_on:
       - server
     restart: unless-stopped
@@ -154,7 +234,29 @@ services:
       - coolify.buildType=dockerfile
       - coolify.public=true
       - coolify.proxy.enabled=true
-
+      - coolify.managed=true
+      - coolify.version=4.0.0-beta.418
+      - coolify.name=frontend-ro4ksgc44g8gk0owoc0o4sk4-210257331049
+      - coolify.resourceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.projectName=mutumwaai
+      - coolify.serviceName=afrinity-techmutumwa-aimain-ro4ksgc44g8gk0owoc0o4sk4
+      - coolify.environmentName=production
+      - coolify.pullRequestId=0
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-frontend.entryPoints=http
+      - traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-frontend.middlewares=gzip
+      - 'traefik.http.routers.http-0-ro4ksgc44g8gk0owoc0o4sk4-frontend.rule=Host(`frontendss848o08gcks8oko80.62.72.19.27.sslip.io`) && PathPrefix(`/`)'
+      - 'caddy_0.encode=zstd gzip'
+      - 'caddy_0.handle_path.0_reverse_proxy={{upstreams}}'
+      - 'caddy_0.handle_path=/*'
+      - caddy_0.header=-Server
+      - 'caddy_0.try_files={path} /index.html /index.php'
+      - 'caddy_0=http://frontendss848o08gcks8oko80.62.72.19.27.sslip.io'
+      - caddy_ingress_network=ro4ksgc44g8gk0owoc0o4sk4
+    networks:
+      ro4ksgc44g8gk0owoc0o4sk4: null
 volumes:
   postgres_data:
     labels:
@@ -167,10 +269,18 @@ volumes:
       - coolify.managed=true
       - coolify.type=volume
       - coolify.service=redis
-
+  ro4ksgc44g8gk0owoc0o4sk4_postgres-data:
+    name: ro4ksgc44g8gk0owoc0o4sk4_postgres-data
+  ro4ksgc44g8gk0owoc0o4sk4_redis-data:
+    name: ro4ksgc44g8gk0owoc0o4sk4_redis-data
 networks:
   default:
     labels:
       - coolify.managed=true
       - coolify.type=network
       - coolify.project=mutumwa-ai
+  ro4ksgc44g8gk0owoc0o4sk4:
+    name: ro4ksgc44g8gk0owoc0o4sk4
+    external: true
+configs: {  }
+secrets: {  }
