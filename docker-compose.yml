@@ -1,21 +1,29 @@
 version: '3.8'
 
+x-common-variables: &common-variables
+  NODE_ENV: ${NODE_ENV:-production}
+
+x-database-variables: &database-variables
+  DB_USER: ${DB_USER:-mutumwa_admin}
+  DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
+  DB_NAME: ${DB_NAME:-mutumwa_ai}
+
 services:
   postgres:
     image: 'postgres:16-alpine'
+    container_name: mutumwa-ai-postgres
     volumes:
       - 'postgres_data:/var/lib/postgresql/data'
     environment:
-      - POSTGRES_USER=$SERVICE_USER_POSTGRES
-      - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
-      - 'POSTGRES_DB=${POSTGRES_DB:-mutumwa_ai}'
+      <<: *database-variables
     healthcheck:
       test:
         - CMD-SHELL
-        - 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}'
+        - 'pg_isready -U ${POSTGRES_USER:-mutumwa_admin} -d ${POSTGRES_DB:-mutumwa_ai}'
       interval: 5s
       timeout: 20s
       retries: 10
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -29,20 +37,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
   collector:
     build:
       context: ./collector
       dockerfile: Dockerfile
     container_name: mutumwa-ai-collector
     ports:
-      - "8888:8888"
+      - "${COLLECTOR_PORT:-8888}:8888"
     environment:
-      - NODE_ENV=production
-      - SERVER_PORT=8888
-      - STORAGE_DIR=/app/collector/storage
-      - HOT_DIR=/app/collector/hotdir
-      - COLLECTOR_DIR=/app/collector
+      <<: *common-variables
+      SERVER_PORT: 8888
+      STORAGE_DIR: /app/collector/storage
+      HOT_DIR: /app/collector/hotdir
+      COLLECTOR_DIR: /app/collector
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./collector/storage:/app/collector/storage
       - ./collector/hotdir:/app/collector/hotdir
@@ -50,38 +58,35 @@ services:
       - postgres
       - redis
     restart: unless-stopped
-
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: mutumwa-ai-server
     ports:
-      - "3001:3001"
+      - "${SERVER_PORT:-3001}:3001"
     environment:
-      - NODE_ENV=production
-      - PORT=3001
-      - DB_USER=$SERVICE_USER_POSTGRES
-      - DB_PASSWORD=$SERVICE_PASSWORD_POSTGRES
-      - 'DB_NAME=${POSTGRES_DB:-mutumwa_ai}'
-      - REDIS_URL=redis://redis:6379
+      <<: [*common-variables, *database-variables]
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
-
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: mutumwa-ai-frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://server:3001
+      <<: *common-variables
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     depends_on:
       - server
     restart: unless-stopped
