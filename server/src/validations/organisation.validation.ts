@@ -2,7 +2,7 @@ import Joi from "joi";
 
 export const createOrganisationSchema = Joi.object({
   name: Joi.string().required(),
-  domain: Joi.string().domain().required(),
+  domain: Joi.string().required(),
   sector: Joi.string().optional(),
 });
 
