@@ -1,0 +1,16 @@
+{
+  "tenants": {
+    "acme": {
+      "name": "Acme Corporation",
+      "users": ["john@acme.com", "jane@acme.com", "admin@acme.com"]
+    },
+    "techcorp": {
+      "name": "Tech Corporation",
+      "users": ["alice@techcorp.com", "bob@techcorp.com", "ceo@techcorp.com"]
+    },
+    "startup": {
+      "name": "Startup Inc",
+      "users": ["founder@startup.com", "dev@startup.com"]
+    }
+  }
+}
