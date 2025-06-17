@@ -7,6 +7,7 @@ import { organisationRoutes } from "./routes/organisation.routes";
 import { tenantRoutes } from "./routes/tenant.routes";
 import { entityManagerMiddleware } from "./middleware/entityManager.middleware";
 import { initializeORM } from "./config/database";
+import { tenantResolverMiddleware } from "./middleware/tenantResolver.middleware";
 
 const app = express();
 
@@ -36,6 +37,9 @@ initializeORM()
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(entityManagerMiddleware);
+console.log("Tenant Resolver");
+app.use(tenantResolverMiddleware);
+console.log("Tenant Resolver Exited");
 
 // Serve Swagger UI static files without CORS
 app.use(
