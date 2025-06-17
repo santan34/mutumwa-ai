@@ -10,7 +10,7 @@ export class Plan {
   name!: string;
 
   @Property()
-  description?: string;
+  description!: string;
 
   @Property({ name: "created_at" })
   createdAt: Date = new Date();

@@ -1,13 +1,13 @@
+import cors from "cors";
 import "dotenv/config"; // Load environment variables
 import express from "express";
-import cors from "cors";
 import swaggerUi from "swagger-ui-express";
-import { specs } from "./config/swagger";
-import { organisationRoutes } from "./routes/organisation.routes";
-import { tenantRoutes } from "./routes/tenant.routes";
 import { initializeORM } from "./config/database";
+import { specs } from "./config/swagger";
 import { tenantResolverMiddleware } from "./middleware/tenantResolver.middleware";
+import { organisationRoutes } from "./routes/organisation.routes";
 import { systemAdminRoutes } from "./routes/systemAdmin.routes";
+import { planRoutes } from "./routes/plan.routes";
 
 const app = express();
 
@@ -52,6 +52,7 @@ app.use(
 // Routes
 app.use("/api/organisations", organisationRoutes);
 app.use("/api/system-admins", systemAdminRoutes);
+app.use("/api/plans", planRoutes);
 
 // Error handling middleware
 app.use(
