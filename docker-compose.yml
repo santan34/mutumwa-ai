@@ -25,12 +25,15 @@ services:
       retries: 10
     restart: unless-stopped
     labels:
-     - coolify.managed=true
-     - coolify.type=service
-     - coolify.serviceName=postgresql
-     - coolify.service.subType=database
-     - coolify.service.subName=postgresql
-
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=postgresql
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+      - coolify.database.type=postgresql
+      - coolify.database.version=15
+      - coolify.backup.enabled=true
+      - coolify.monitoring.enabled=true
   redis:
     image: redis:7-alpine
     container_name: mutumwa-ai-redis
@@ -43,6 +46,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=redis
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+      - coolify.database.type=redis
+      - coolify.database.version=7-alpine
+      - coolify.monitoring.enabled=true
+      - coolify.port=6379
+
   collector:
     build:
       context: ./collector
@@ -64,6 +79,18 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=collector
+      - coolify.service.subType=application
+      - coolify.service.subName=collector
+      - coolify.port=8888
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nodejs
+      - coolify.logging.enabled=true
   server:
     build:
       context: ./server
@@ -86,6 +113,19 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=server
+      - coolify.service.subType=application
+      - coolify.service.subName=api-server
+      - coolify.port=3001
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nodejs
+      - coolify.logging.enabled=true
+      - coolify.buildType=dockerfile
   frontend:
     build:
       context: ./frontend
@@ -99,7 +139,38 @@ services:
     depends_on:
       - server
     restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=frontend
+      - coolify.service.subType=application
+      - coolify.service.subName=web-frontend
+      - coolify.port=3000
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nextjs
+      - coolify.logging.enabled=true
+      - coolify.buildType=dockerfile
+      - coolify.public=true
+      - coolify.proxy.enabled=true
 
 volumes:
   postgres_data:
+    labels:
+      - coolify.managed=true
+      - coolify.type=volume
+      - coolify.service=postgresql
+      - coolify.backup.enabled=true
   redis_data:
+    labels:
+      - coolify.managed=true
+      - coolify.type=volume
+      - coolify.service=redis
+
+networks:
+  default:
+    labels:
+      - coolify.managed=true
+      - coolify.type=network
+      - coolify.project=mutumwa-ai
