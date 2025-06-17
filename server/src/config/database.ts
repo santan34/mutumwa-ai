@@ -1,6 +1,5 @@
 import { MikroORM, Options } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
-import { Organisation } from "../entities/public/Organisation";
 import "dotenv/config";
 
 const config: Options<PostgreSqlDriver> = {
@@ -11,6 +10,10 @@ const config: Options<PostgreSqlDriver> = {
   password: process.env.DB_PASSWORD,
   entitiesTs: ["./src/entities"],
   debug: true,
+  pool: {
+    min: 2, // Minimum number of connections to keep alive
+    max: 10, // Maximum number of connections allowed
+  },
 };
 
 export let orm: MikroORM<PostgreSqlDriver>;

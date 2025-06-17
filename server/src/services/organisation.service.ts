@@ -1,6 +1,7 @@
 // services/organisation.service.ts
 import { EntityManager } from "@mikro-orm/core";
 import { Organisation } from "../entities/public/Organisation";
+import { createTenantSchema } from "../utils/createTenantSchema";
 
 export class OrganisationServiceError extends Error {
   constructor(message: string) {
@@ -39,6 +40,7 @@ export const OrganisationService = {
         updatedAt: new Date(),
       });
       await em.persistAndFlush(org);
+      await createTenantSchema(org.id); // Create tenant schema after organisation is created
       return org;
     } catch (error) {
       if (error instanceof Error && error.message.includes("duplicate key")) {
