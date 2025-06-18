@@ -12,6 +12,7 @@ import { featureRoutes } from "./routes/public/feature.routes";
 import { userRoutes } from "./routes/tenant/user.routes";
 import { planFeatureRoutes } from "./routes/public/planFeatures.routes";
 import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
+import { organisationPlanRoutes } from "./routes/public/organisationPlan.routes";
 
 const app = express();
 
@@ -60,6 +61,10 @@ app.use("/api/plans", planRoutes);
 app.use("/api/features", featureRoutes);
 app.use("/api/plan-features", planFeatureRoutes);
 app.use("/api/api-usage", apiUsageRoutes);
+app.use("/api/organisation-plans", organisationPlanRoutes);
+
+// Tenant-specific routes
+
 app.use("/api/tenant/users", userRoutes);
 
 // Error handling middleware
