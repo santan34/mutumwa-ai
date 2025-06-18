@@ -1,28 +1,44 @@
 version: '3.8'
 
+x-common-variables: &common-variables
+  NODE_ENV: ${NODE_ENV:-production}
+
+x-database-variables: &database-variables
+  POSTGRES_USER: ${DB_USER:-mutumwa_admin}
+  POSTGRES_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
+  POSTGRES_DB: ${DB_NAME:-mutumwa_ai}
+
 services:
   postgres:
     image: postgres:15
     container_name: mutumwa-ai-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mutumwa_ai_dev
-    ports:
-      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - 'postgres_data:/var/lib/postgresql/data'
+    environment:
+      <<: *database-variables
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U ${DB_USER:-mutumwa_admin} -d ${DB_NAME:-mutumwa_ai}'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=postgresql
+      - coolify.service.subType=database
+      - coolify.service.subName=postgresql
+      - coolify.database.type=postgresql
+      - coolify.database.version=15
+      - coolify.backup.enabled=true
+      - coolify.monitoring.enabled=true
   redis:
     image: redis:7-alpine
     container_name: mutumwa-ai-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -30,20 +46,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+    restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=redis
+      - coolify.service.subType=database
+      - coolify.service.subName=redis
+      - coolify.database.type=redis
+      - coolify.database.version=7-alpine
+      - coolify.monitoring.enabled=true
+      - coolify.port=6379
   collector:
     build:
-      context: ./collector
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: collector/Dockerfile
     container_name: mutumwa-ai-collector
     ports:
-      - "8888:8888"
+      - "${COLLECTOR_PORT:-8888}:8888"
     environment:
-      - NODE_ENV=production
-      - SERVER_PORT=8888
-      - STORAGE_DIR=/app/collector/storage
-      - HOT_DIR=/app/collector/hotdir
-      - COLLECTOR_DIR=/app/collector
+      <<: *common-variables
+      SERVER_PORT: 8888
+      STORAGE_DIR: /app/collector/storage
+      HOT_DIR: /app/collector/hotdir
+      COLLECTOR_DIR: /app/collector
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./collector/storage:/app/collector/storage
       - ./collector/hotdir:/app/collector/hotdir
@@ -51,40 +78,96 @@ services:
       - postgres
       - redis
     restart: unless-stopped
-
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=collector
+      - coolify.service.subType=application
+      - coolify.service.subName=collector
+      - coolify.port=8888
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nodejs      - coolify.logging.enabled=true
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: mutumwa-ai-server
     ports:
-      - "3001:3001"
+      - "${SERVER_PORT:-3001}:3001"
     environment:
-      - NODE_ENV=production
-      - PORT=3001
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/mutumwa_ai_dev
-      - REDIS_URL=redis://redis:6379
+      <<: *common-variables
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-mutumwa_admin}
+      DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
+      DB_NAME: ${DB_NAME:-mutumwa_ai}
+      REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
-
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=server
+      - coolify.service.subType=application
+      - coolify.service.subName=api-server
+      - coolify.port=3001
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nodejs
+      - coolify.logging.enabled=true      - coolify.buildType=dockerfile
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: mutumwa-ai-frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://server:3001
+      <<: *common-variables
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     depends_on:
       - server
     restart: unless-stopped
+    labels:
+      - coolify.managed=true
+      - coolify.type=service
+      - coolify.serviceName=frontend
+      - coolify.service.subType=application
+      - coolify.service.subName=web-frontend
+      - coolify.port=3000
+      - coolify.healthcheck.enabled=true
+      - coolify.monitoring.enabled=true
+      - coolify.environment=production
+      - coolify.framework=nextjs
+      - coolify.logging.enabled=true
+      - coolify.buildType=dockerfile
+      - coolify.public=true
+      - coolify.proxy.enabled=true
 
 volumes:
   postgres_data:
+    labels:
+      - coolify.managed=true
+      - coolify.type=volume
+      - coolify.service=postgresql
+      - coolify.backup.enabled=true
   redis_data:
+    labels:
+      - coolify.managed=true
+      - coolify.type=volume
+      - coolify.service=redis
+
+networks:
+  default:
+    labels:
+      - coolify.managed=true
+      - coolify.type=network
+      - coolify.project=mutumwa-ai
