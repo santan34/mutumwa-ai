@@ -1,21 +1,21 @@
 import { Request, Response } from "express";
 import {
-  FeatureService,
-  FeatureServiceError,
-} from "../services/feature.service";
+  PlanService,
+  PlanServiceError,
+} from "../../services/public/plan.service";
 import { EntityManager } from "@mikro-orm/core";
 
 interface RequestWithEm extends Request {
   em: EntityManager;
 }
 
-export const FeatureController = {
+export const PlanController = {
   getAll: async (req: RequestWithEm, res: Response) => {
     try {
-      const features = await FeatureService.getAll(req.em);
+      const plans = await PlanService.getAll(req.em);
       return res.status(200).json({
         status: "success",
-        data: features,
+        data: plans,
       });
     } catch (error) {
       return res.status(500).json({
@@ -28,13 +28,13 @@ export const FeatureController = {
 
   create: async (req: RequestWithEm, res: Response) => {
     try {
-      const feature = await FeatureService.create(req.em, req.body);
+      const plan = await PlanService.create(req.em, req.body);
       return res.status(201).json({
         status: "success",
-        data: feature,
+        data: plan,
       });
     } catch (error) {
-      if (error instanceof FeatureServiceError) {
+      if (error instanceof PlanServiceError) {
         return res.status(400).json({
           status: "error",
           message: error.message,
@@ -49,13 +49,13 @@ export const FeatureController = {
 
   getById: async (req: RequestWithEm, res: Response) => {
     try {
-      const feature = await FeatureService.getById(req.em, req.params.id);
+      const plan = await PlanService.getById(req.em, req.params.id);
       return res.status(200).json({
         status: "success",
-        data: feature,
+        data: plan,
       });
     } catch (error) {
-      if (error instanceof FeatureServiceError) {
+      if (error instanceof PlanServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -70,17 +70,13 @@ export const FeatureController = {
 
   update: async (req: RequestWithEm, res: Response) => {
     try {
-      const feature = await FeatureService.update(
-        req.em,
-        req.params.id,
-        req.body
-      );
+      const plan = await PlanService.update(req.em, req.params.id, req.body);
       return res.status(200).json({
         status: "success",
-        data: feature,
+        data: plan,
       });
     } catch (error) {
-      if (error instanceof FeatureServiceError) {
+      if (error instanceof PlanServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -95,13 +91,13 @@ export const FeatureController = {
 
   delete: async (req: RequestWithEm, res: Response) => {
     try {
-      await FeatureService.softDelete(req.em, req.params.id);
+      await PlanService.delete(req.em, req.params.id);
       return res.status(200).json({
         status: "success",
-        message: "Feature deleted successfully",
+        message: "Plan deleted successfully",
       });
     } catch (error) {
-      if (error instanceof FeatureServiceError) {
+      if (error instanceof PlanServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,

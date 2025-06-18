@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
-import { TenantService, TenantServiceError } from "../services/tenant.service";
+import {
+  TenantService,
+  TenantServiceError,
+} from "../../services/public/tenant.service";
 import { EntityManager } from "@mikro-orm/core";
-
 
 interface RequestWithEm extends Request {
   em: EntityManager;
@@ -13,7 +15,11 @@ export const TenantController = {
       const tenants = await TenantService.getAll(req.em);
       return res.status(200).json({ status: "success", data: tenants });
     } catch (error) {
-      return res.status(500).json({ status: "error", message: error instanceof Error ? error.message : "Internal server error" });
+      return res.status(500).json({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Internal server error",
+      });
     }
   },
 
@@ -23,9 +29,13 @@ export const TenantController = {
       return res.status(201).json({ status: "success", data: tenant });
     } catch (error) {
       if (error instanceof TenantServiceError) {
-        return res.status(400).json({ status: "error", message: error.message });
+        return res
+          .status(400)
+          .json({ status: "error", message: error.message });
       }
-      return res.status(500).json({ status: "error", message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
   },
 
@@ -35,33 +45,51 @@ export const TenantController = {
       return res.status(200).json({ status: "success", data: tenant });
     } catch (error) {
       if (error instanceof TenantServiceError) {
-        return res.status(404).json({ status: "error", message: error.message });
+        return res
+          .status(404)
+          .json({ status: "error", message: error.message });
       }
-      return res.status(500).json({ status: "error", message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
   },
 
   update: async (req: RequestWithEm, res: Response) => {
     try {
-      const tenant = await TenantService.update(req.em, req.params.id, req.body);
+      const tenant = await TenantService.update(
+        req.em,
+        req.params.id,
+        req.body
+      );
       return res.status(200).json({ status: "success", data: tenant });
     } catch (error) {
       if (error instanceof TenantServiceError) {
-        return res.status(404).json({ status: "error", message: error.message });
+        return res
+          .status(404)
+          .json({ status: "error", message: error.message });
       }
-      return res.status(500).json({ status: "error", message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
   },
 
   softDelete: async (req: RequestWithEm, res: Response) => {
     try {
       await TenantService.softDelete(req.em, req.params.id);
-      return res.status(200).json({ status: "success", message: "Tenant deleted successfully" });
+      return res
+        .status(200)
+        .json({ status: "success", message: "Tenant deleted successfully" });
     } catch (error) {
       if (error instanceof TenantServiceError) {
-        return res.status(404).json({ status: "error", message: error.message });
+        return res
+          .status(404)
+          .json({ status: "error", message: error.message });
       }
-      return res.status(500).json({ status: "error", message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
   },
 
@@ -71,9 +99,13 @@ export const TenantController = {
       return res.status(200).json({ status: "success", data: tenant });
     } catch (error) {
       if (error instanceof TenantServiceError) {
-        return res.status(404).json({ status: "error", message: error.message });
+        return res
+          .status(404)
+          .json({ status: "error", message: error.message });
       }
-      return res.status(500).json({ status: "error", message: "Internal server error" });
+      return res
+        .status(500)
+        .json({ status: "error", message: "Internal server error" });
     }
   },
 
@@ -82,7 +114,11 @@ export const TenantController = {
       const tenants = await TenantService.getSoftDeleted(req.em);
       return res.status(200).json({ status: "success", data: tenants });
     } catch (error) {
-      return res.status(500).json({ status: "error", message: error instanceof Error ? error.message : "Internal server error" });
+      return res.status(500).json({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Internal server error",
+      });
     }
   },
 };

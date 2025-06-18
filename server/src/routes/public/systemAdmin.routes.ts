@@ -1,11 +1,11 @@
 import { Router, Request, Response, RequestHandler } from "express";
-import { SystemAdminController } from "../controllers/systemAdmin.controller";
-import { validateRequest } from "../middleware/validation.middleware";
+import { SystemAdminController } from "../../controllers/public/systemAdmin.controller";
+import { validateRequest } from "../../middleware/validation.middleware";
 import {
   createSystemAdminSchema,
   updateSystemAdminSchema,
   adminIdParamSchema,
-} from "../validations/systemAdmin.validation";
+} from "../../validations/public/systemAdmin.validation";
 import { EntityManager } from "@mikro-orm/core";
 
 /**

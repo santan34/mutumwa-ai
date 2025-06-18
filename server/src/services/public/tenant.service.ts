@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/core";
-import { User } from "../entities/tenant/User";
-import { createTenantSchema } from '../utils/createTenantSchema';
+import { User } from "../../entities/tenant/User";
+import { createTenantSchema } from "../../utils/createTenantSchema";
 
 export class TenantServiceError extends Error {
   constructor(message: string) {
@@ -20,7 +20,9 @@ export const TenantService = {
       return await em.find(User, { deletedAt: null });
     } catch (error) {
       throw new TenantServiceError(
-        `Failed to fetch tenants: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to fetch tenants: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -37,7 +39,9 @@ export const TenantService = {
       return user;
     } catch (error) {
       throw new TenantServiceError(
-        `Failed to create tenant: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to create tenant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -49,12 +53,18 @@ export const TenantService = {
       return user;
     } catch (error) {
       throw new TenantServiceError(
-        `Failed to fetch tenant: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to fetch tenant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
 
-  update: async (em: EntityManager, id: string, data: Partial<User>): Promise<User> => {
+  update: async (
+    em: EntityManager,
+    id: string,
+    data: Partial<User>
+  ): Promise<User> => {
     try {
       const user = await TenantService.getById(em, id);
       em.assign(user, { ...data, updatedAt: new Date() });
@@ -62,7 +72,9 @@ export const TenantService = {
       return user;
     } catch (error) {
       throw new TenantServiceError(
-        `Failed to update tenant: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to update tenant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -80,7 +92,9 @@ export const TenantService = {
       return await em.find(User, { deletedAt: { $ne: null } });
     } catch (error) {
       throw new TenantServiceError(
-        `Failed to fetch deleted tenants: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to fetch deleted tenants: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },

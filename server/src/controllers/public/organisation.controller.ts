@@ -1,21 +1,22 @@
 import { Request, Response } from "express";
 import {
-  SystemAdminService,
-  SystemAdminServiceError,
-} from "../services/systemAdmin.service";
+  OrganisationService,
+  OrganisationServiceError,
+} from "../../services/public/organisation.service";
 import { EntityManager } from "@mikro-orm/core";
 
+// Add a RequestWithEm interface to extend the Express Request
 interface RequestWithEm extends Request {
   em: EntityManager;
 }
 
-export const SystemAdminController = {
+export const OrganisationController = {
   getAll: async (req: RequestWithEm, res: Response) => {
     try {
-      const admins = await SystemAdminService.getAll(req.em);
+      const organisations = await OrganisationService.getAll(req.em);
       return res.status(200).json({
         status: "success",
-        data: admins,
+        data: organisations,
       });
     } catch (error) {
       return res.status(500).json({
@@ -28,13 +29,13 @@ export const SystemAdminController = {
 
   create: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.create(req.em, req.body);
+      const organisation = await OrganisationService.create(req.em, req.body);
       return res.status(201).json({
         status: "success",
-        data: admin,
+        data: organisation,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof OrganisationServiceError) {
         return res.status(400).json({
           status: "error",
           message: error.message,
@@ -49,13 +50,16 @@ export const SystemAdminController = {
 
   getById: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.getById(req.em, req.params.id);
+      const organisation = await OrganisationService.getById(
+        req.em,
+        req.params.id
+      );
       return res.status(200).json({
         status: "success",
-        data: admin,
+        data: organisation,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof OrganisationServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -70,17 +74,17 @@ export const SystemAdminController = {
 
   update: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.update(
+      const organisation = await OrganisationService.update(
         req.em,
         req.params.id,
         req.body
       );
       return res.status(200).json({
         status: "success",
-        data: admin,
+        data: organisation,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof OrganisationServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -93,18 +97,15 @@ export const SystemAdminController = {
     }
   },
 
-  toggleActive: async (req: RequestWithEm, res: Response) => {
+  softDelete: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.toggleActive(
-        req.em,
-        req.params.id
-      );
+      await OrganisationService.softDelete(req.em, req.params.id);
       return res.status(200).json({
         status: "success",
-        data: admin,
+        message: "Organisation deleted successfully",
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof OrganisationServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -113,6 +114,46 @@ export const SystemAdminController = {
       return res.status(500).json({
         status: "error",
         message: "Internal server error",
+      });
+    }
+  },
+
+  activate: async (req: RequestWithEm, res: Response) => {
+    try {
+      const organisation = await OrganisationService.activate(
+        req.em,
+        req.params.id
+      );
+      return res.status(200).json({
+        status: "success",
+        data: organisation,
+      });
+    } catch (error) {
+      if (error instanceof OrganisationServiceError) {
+        return res.status(404).json({
+          status: "error",
+          message: error.message,
+        });
+      }
+      return res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+      });
+    }
+  },
+
+  getSoftDeleted: async (req: RequestWithEm, res: Response) => {
+    try {
+      const organisations = await OrganisationService.getSoftDeleted(req.em);
+      return res.status(200).json({
+        status: "success",
+        data: organisations,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Internal server error",
       });
     }
   },
