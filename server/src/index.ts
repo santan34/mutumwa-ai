@@ -5,10 +5,13 @@ import swaggerUi from "swagger-ui-express";
 import { initializeORM } from "./config/database";
 import { specs } from "./config/swagger";
 import { tenantResolverMiddleware } from "./middleware/tenantResolver.middleware";
-import { organisationRoutes } from "./routes/organisation.routes";
-import { systemAdminRoutes } from "./routes/systemAdmin.routes";
-import { planRoutes } from "./routes/plan.routes";
-import { featureRoutes } from "./routes/feature.routes";
+import { organisationRoutes } from "./routes/public/organisation.routes";
+import { systemAdminRoutes } from "./routes/public/systemAdmin.routes";
+import { planRoutes } from "./routes/public/plan.routes";
+import { featureRoutes } from "./routes/public/feature.routes";
+import { userRoutes } from "./routes/tenant/user.routes";
+import { planFeatureRoutes } from "./routes/public/planFeatures.routes";
+import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
 
 const app = express();
 
@@ -55,6 +58,9 @@ app.use("/api/organisations", organisationRoutes);
 app.use("/api/system-admins", systemAdminRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/features", featureRoutes);
+app.use("/api/plan-features", planFeatureRoutes);
+app.use("/api/api-usage", apiUsageRoutes);
+app.use("/api/tenant/users", userRoutes);
 
 // Error handling middleware
 app.use(

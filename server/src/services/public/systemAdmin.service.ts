@@ -1,5 +1,5 @@
 import { EntityManager } from "@mikro-orm/core";
-import { SystemAdmin } from "../entities/public/SystemAdmin";
+import { SystemAdmin } from "../../entities/public/SystemAdmin";
 
 export class SystemAdminServiceError extends Error {
   constructor(message: string) {
