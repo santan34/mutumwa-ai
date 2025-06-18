@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3001",
+        url: "/",
         description: "Development server",
       },
     ],
@@ -18,7 +18,7 @@ const options = {
   apis: [
     "./src/routes/**/*.ts",
     "./src/controllers/**/*.ts",
-    "./src/entities/**/*.ts"
+    "./src/entities/**/*.ts",
   ],
 };
 
