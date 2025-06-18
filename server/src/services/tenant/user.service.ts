@@ -48,7 +48,7 @@ export const UserService = {
 
   getById: async (em: EntityManager, id: string): Promise<User> => {
     try {
-      const user = await em.findOne(User, { id, deletedAt: null });
+      const user = await em.findOne(User, { id });
       if (!user) {
         throw new UserServiceError(`User with id ${id} not found`);
       }
