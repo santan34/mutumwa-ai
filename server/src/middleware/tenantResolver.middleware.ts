@@ -16,7 +16,6 @@ export const tenantResolverMiddleware = async (
     const org = await baseEm.findOne(Organisation, { domain });
 
     if (!org) {
-      console.warn(`No organisation found for domain: ${domain}`);
       req.em = baseEm;
       return next();
     }
@@ -26,8 +25,6 @@ export const tenantResolverMiddleware = async (
     await tenantEm
       .getConnection()
       .execute(`SET search_path TO ${tenantSchema}, public`);
-
-    console.log(`Tenant resolved: ${org.name} (schema: ${tenantSchema})`);
 
     req.em = tenantEm;
     req.tenant = org;
