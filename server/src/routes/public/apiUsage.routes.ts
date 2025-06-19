@@ -58,7 +58,7 @@ const { getAll, create, getByKeys, update, incrementUsage } = Object.entries(
 
 /**
  * @swagger
- * /api/usage:
+ * /api/api-usage:
  *   get:
  *     summary: Get all API usage records
  *     tags: [ApiUsage]
@@ -78,7 +78,7 @@ router.get("/", getAll);
 
 /**
  * @swagger
- * /api/usage:
+ * /api/api-usage:
  *   post:
  *     summary: Create a new API usage record
  *     tags: [ApiUsage]
@@ -130,7 +130,7 @@ router.post(
 
 /**
  * @swagger
- * /api/usage/{organisationId}/{featureId}/{periodStart}:
+ * /api/api-usage/{organisationId}/{featureId}/{periodStart}:
  *   get:
  *     summary: Get API usage by keys
  *     tags: [ApiUsage]
@@ -176,7 +176,7 @@ router.get(
 
 /**
  * @swagger
- * /api/usage/{organisationId}/{featureId}/{periodStart}:
+ * /api/api-usage/{organisationId}/{featureId}/{periodStart}:
  *   patch:
  *     summary: Update an API usage record
  *     tags: [ApiUsage]
@@ -236,7 +236,7 @@ router.patch(
 
 /**
  * @swagger
- * /api/usage/{organisationId}/{featureId}/{periodStart}/increment:
+ * /api/api-usage/{organisationId}/{featureId}/{periodStart}/increment:
  *   patch:
  *     summary: Increment usage count for an API usage record
  *     tags: [ApiUsage]

@@ -14,6 +14,14 @@ import { EntityManager } from "@mikro-orm/core";
  *   name: Users
  *   description: Tenant-specific user management endpoints
  * components:
+ *   parameters:
+ *     TenantDomainHeader:
+ *       in: header
+ *       name: X-Tenant-Domain
+ *       schema:
+ *         type: string
+ *       required: true
+ *       description: Domain identifier for the tenant
  *   schemas:
  *     User:
  *       type: object
@@ -83,6 +91,8 @@ const {
  *   get:
  *     summary: Get all users for a tenant
  *     tags: [Users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *     responses:
  *       200:
  *         description: List of users retrieved successfully
@@ -107,18 +117,14 @@ router.get("/", getAll);
  *   post:
  *     summary: Create a new user for a tenant
  *     tags: [Users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       201:
  *         description: User created successfully
@@ -140,6 +146,7 @@ router.post("/", validateRequest(createUserSchema) as RequestHandler, create);
  *     summary: Get a tenant user by ID
  *     tags: [Users]
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -172,19 +179,26 @@ router.get(
  *     summary: Update a user
  *     tags: [Users]
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
  *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       200:
  *         description: User updated successfully
- *       400:
- *         description: Invalid input data
  *       404:
  *         description: User not found
+ *       500:
+ *         description: Server error
  */
 router.patch(
   "/:id",
@@ -200,6 +214,7 @@ router.patch(
  *     summary: Soft delete a user
  *     tags: [Users]
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *       - in: path
  *         name: id
  *         required: true
@@ -211,6 +226,8 @@ router.patch(
  *         description: User soft-deleted successfully
  *       404:
  *         description: User not found
+ *       500:
+ *         description: Server error
  */
 router.delete(
   "/:id",
@@ -223,25 +240,20 @@ router.delete(
  * /api/tenant/users/{id}/restore:
  *   post:
  *     summary: Restore a soft-deleted tenant user
- *     description: Restores a previously soft-deleted user account
  *     tags: [Users]
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
  *           format: uuid
- *         description: UUID of the user to restore
  *     responses:
  *       200:
  *         description: User restored successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
  *       404:
- *         description: User not found or not deleted
+ *         description: User not found
  *       500:
  *         description: Server error
  */
@@ -256,16 +268,15 @@ router.post(
  * /api/tenant/users/{id}/permanent:
  *   delete:
  *     summary: Permanently delete a tenant user
- *     description: Permanently removes a user account. This action cannot be undone.
  *     tags: [Users]
  *     parameters:
+ *       - $ref: '#/components/parameters/TenantDomainHeader'
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
  *           format: uuid
- *         description: UUID of the user to delete permanently
  *     responses:
  *       200:
  *         description: User permanently deleted
