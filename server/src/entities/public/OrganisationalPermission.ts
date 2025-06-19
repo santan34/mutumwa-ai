@@ -1,9 +1,9 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { v4 as uuidv4 } from "uuid";
 
-@Entity({ tableName: 'organisational_permissions', schema: 'public' })
+@Entity({ tableName: "organisational_permissions", schema: "public" })
 export class OrganisationalPermission {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: "uuid" })
   id: string = uuidv4();
 
   @Property({ unique: true })
@@ -12,12 +12,12 @@ export class OrganisationalPermission {
   @Property({ nullable: true })
   description?: string;
 
-  @Property({ name: 'created_at' })
+  @Property({ name: "created_at" })
   createdAt: Date = new Date();
 
-  @Property({ name: 'updated_at' })
+  @Property({ name: "updated_at" })
   updatedAt: Date = new Date();
 
-  @Property({ name: 'deleted_at', nullable: true })
+  @Property({ name: "deleted_at", nullable: true })
   deletedAt?: Date;
 }

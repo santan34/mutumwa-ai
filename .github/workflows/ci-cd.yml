@@ -90,11 +90,11 @@ jobs:
         cd server
         npm run build
       env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: mutumwa_ai_test
-        DB_USER: postgres
-        DB_PASSWORD: password
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: mutumwa_ai_test
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: password
         DATABASE_URL: postgresql://postgres:password@localhost:5432/mutumwa_ai_test
 
     - name: Run server tests (if available)
@@ -106,11 +106,11 @@ jobs:
           echo "No tests found for server"
         fi
       env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: mutumwa_ai_test
-        DB_USER: postgres
-        DB_PASSWORD: password
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_DB: mutumwa_ai_test
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: password
         DATABASE_URL: postgresql://postgres:password@localhost:5432/mutumwa_ai_test
         REDIS_URL: redis://localhost:6379
 
