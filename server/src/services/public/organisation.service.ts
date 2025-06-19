@@ -2,6 +2,7 @@
 import { EntityManager } from "@mikro-orm/core";
 import { Organisation } from "../../entities/public/Organisation";
 import { createTenantSchema } from "../../utils/createTenantSchema";
+import { createLanceDbForOrg } from '../../utils/createLanceDbForOrg';
 
 export class OrganisationServiceError extends Error {
   constructor(message: string) {
@@ -41,6 +42,14 @@ export const OrganisationService = {
       });
       await em.persistAndFlush(org);
       await createTenantSchema(org.id); // Create tenant schema after organisation is created
+      try {
+        await createLanceDbForOrg(org.id); // Create LanceDB for the organisation
+      } catch (lanceError) {
+        // Optionally, you can log this error or handle rollback if needed
+        throw new OrganisationServiceError(
+          `Organisation created but failed to create LanceDB: ${lanceError instanceof Error ? lanceError.message : lanceError}`
+        );
+      }
       return org;
     } catch (error) {
       if (error instanceof Error && error.message.includes("duplicate key")) {
