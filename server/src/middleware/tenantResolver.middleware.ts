@@ -16,18 +16,21 @@ export const tenantResolverMiddleware = async (
     const org = await baseEm.findOne(Organisation, { domain });
 
     if (!org) {
-      console.warn(`No organisation found for domain: ${domain}`);
       req.em = baseEm;
       return next();
     }
 
-    const tenantSchema = `tenant_${org.id}`.replace(/[^a-z0-9_]/gi, "");
+    const tenantSchema = `tenant_${org.id}`;
     const tenantEm = orm.em.fork();
-    await tenantEm
-      .getConnection()
-      .execute(`SET search_path TO ${tenantSchema}, public`);
 
-    console.log(`Tenant resolved: ${org.name} (schema: ${tenantSchema})`);
+    // Explicitly set search path for this connection
+    await tenantEm.getConnection().execute(`
+      SET search_path TO "${tenantSchema}", public;
+      SET statement_timeout = 0;
+    `);
+
+    // Set schema on EntityManager configuration
+    tenantEm.config.set("schema", tenantSchema);
 
     req.em = tenantEm;
     req.tenant = org;

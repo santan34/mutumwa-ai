@@ -1,7 +1,7 @@
 // services/organisation.service.ts
 import { EntityManager } from "@mikro-orm/core";
-import { Organisation } from "../entities/public/Organisation";
-import { createTenantSchema } from "../utils/createTenantSchema";
+import { Organisation } from "../../entities/public/Organisation";
+import { createTenantSchema } from "../../utils/createTenantSchema";
 
 export class OrganisationServiceError extends Error {
   constructor(message: string) {

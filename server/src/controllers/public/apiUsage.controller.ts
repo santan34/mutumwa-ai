@@ -1,40 +1,36 @@
 import { Request, Response } from "express";
-import {
-  SystemAdminService,
-  SystemAdminServiceError,
-} from "../services/systemAdmin.service";
 import { EntityManager } from "@mikro-orm/core";
+import { ApiUsageService, ApiUsageServiceError } from "../../services/public/apiUsage.service";
 
 interface RequestWithEm extends Request {
   em: EntityManager;
 }
 
-export const SystemAdminController = {
+export const ApiUsageController = {
   getAll: async (req: RequestWithEm, res: Response) => {
     try {
-      const admins = await SystemAdminService.getAll(req.em);
+      const usage = await ApiUsageService.getAll(req.em);
       return res.status(200).json({
         status: "success",
-        data: admins,
+        data: usage,
       });
     } catch (error) {
       return res.status(500).json({
         status: "error",
-        message:
-          error instanceof Error ? error.message : "Internal server error",
+        message: error instanceof Error ? error.message : "Internal server error",
       });
     }
   },
 
   create: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.create(req.em, req.body);
+      const usage = await ApiUsageService.create(req.em, req.body);
       return res.status(201).json({
         status: "success",
-        data: admin,
+        data: usage,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof ApiUsageServiceError) {
         return res.status(400).json({
           status: "error",
           message: error.message,
@@ -47,15 +43,20 @@ export const SystemAdminController = {
     }
   },
 
-  getById: async (req: RequestWithEm, res: Response) => {
+  getByKeys: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.getById(req.em, req.params.id);
+      const usage = await ApiUsageService.getByKeys(
+        req.em,
+        req.params.organisationId,
+        req.params.featureId,
+        new Date(req.params.periodStart)
+      );
       return res.status(200).json({
         status: "success",
-        data: admin,
+        data: usage,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof ApiUsageServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -70,17 +71,19 @@ export const SystemAdminController = {
 
   update: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.update(
+      const usage = await ApiUsageService.update(
         req.em,
-        req.params.id,
+        req.params.organisationId,
+        req.params.featureId,
+        new Date(req.params.periodStart),
         req.body
       );
       return res.status(200).json({
         status: "success",
-        data: admin,
+        data: usage,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof ApiUsageServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,
@@ -93,18 +96,20 @@ export const SystemAdminController = {
     }
   },
 
-  toggleActive: async (req: RequestWithEm, res: Response) => {
+  incrementUsage: async (req: RequestWithEm, res: Response) => {
     try {
-      const admin = await SystemAdminService.toggleActive(
+      const usage = await ApiUsageService.incrementUsage(
         req.em,
-        req.params.id
+        req.params.organisationId,
+        req.params.featureId,
+        new Date(req.params.periodStart)
       );
       return res.status(200).json({
         status: "success",
-        data: admin,
+        data: usage,
       });
     } catch (error) {
-      if (error instanceof SystemAdminServiceError) {
+      if (error instanceof ApiUsageServiceError) {
         return res.status(404).json({
           status: "error",
           message: error.message,

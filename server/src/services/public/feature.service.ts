@@ -1,5 +1,5 @@
 import { EntityManager } from "@mikro-orm/core";
-import { Feature } from "../entities/public/Feature";
+import { Feature } from "../../entities/public/Feature";
 
 export class FeatureServiceError extends Error {
   constructor(message: string) {

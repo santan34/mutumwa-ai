@@ -1,5 +1,5 @@
 import { EntityManager } from "@mikro-orm/core";
-import { Plan } from "../entities/public/Plan";
+import { Plan } from "../../entities/public/Plan";
 
 export class PlanServiceError extends Error {
   constructor(message: string) {

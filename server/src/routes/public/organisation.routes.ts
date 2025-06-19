@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { RequestHandler, Request, Response } from "express";
-import { OrganisationController } from "../controllers/organisation.controller";
-import { validateRequest } from "../middleware/validation.middleware";
+import { OrganisationController } from "../../controllers/public/organisation.controller";
+import { validateRequest } from "../../middleware/validation.middleware";
 import { EntityManager } from "@mikro-orm/core";
 import {
   createOrganisationSchema,
   updateOrganisationSchema,
   orgIdParamSchema,
-} from "../validations/organisation.validation";
+} from "../../validations/public/organisation.validation";
 
 /**
  * @swagger

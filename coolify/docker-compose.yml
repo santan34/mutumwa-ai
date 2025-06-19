@@ -1,21 +1,20 @@
 version: '3.8'
-
-x-common-variables: &common-variables
-  NODE_ENV: ${NODE_ENV:-production}
-
-x-database-variables: &database-variables
-  POSTGRES_USER: ${DB_USER:-mutumwa_admin}
-  POSTGRES_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-  POSTGRES_DB: ${DB_NAME:-mutumwa_ai}
-
+x-common-variables:
+  NODE_ENV: '${NODE_ENV:-production}'
+x-database-variables:
+  POSTGRES_USER: '${DB_USER:-mutumwa_admin}'
+  POSTGRES_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
+  POSTGRES_DB: '${DB_NAME:-mutumwa_ai}'
 services:
   postgres:
-    image: postgres:15
+    image: 'postgres:15'
     container_name: mutumwa-ai-postgres
     volumes:
       - 'postgres_data:/var/lib/postgresql/data'
     environment:
-      <<: *database-variables
+      POSTGRES_USER: '${DB_USER:-mutumwa_admin}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
+      POSTGRES_DB: '${DB_NAME:-mutumwa_ai}'
     healthcheck:
       test:
         - CMD-SHELL
@@ -35,14 +34,17 @@ services:
       - coolify.backup.enabled=true
       - coolify.monitoring.enabled=true
   redis:
-    image: redis:7-alpine
+    image: 'redis:7-alpine'
     container_name: mutumwa-ai-redis
     ports:
-      - "6380:6379"
+      - '6379:6379'
     volumes:
-      - redis_data:/data
+      - 'redis_data:/data'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+        - CMD
+        - redis-cli
+        - ping
       interval: 10s
       timeout: 5s
       retries: 5
@@ -58,22 +60,18 @@ services:
       - coolify.monitoring.enabled=true
       - coolify.port=6379
   collector:
-    build:
-      context: .
-      dockerfile: collector/Dockerfile
+    image: 'ghcr.io/afrinity-tech/mutumwa-ai-collector:latest'
     container_name: mutumwa-ai-collector
-    ports:
-      - "${COLLECTOR_PORT:-8888}:8888"
     environment:
-      <<: *common-variables
+      NODE_ENV: '${NODE_ENV:-production}'
       SERVER_PORT: 8888
       STORAGE_DIR: /app/collector/storage
       HOT_DIR: /app/collector/hotdir
       COLLECTOR_DIR: /app/collector
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: 'redis://redis:6379'
     volumes:
-      - ./collector/storage:/app/collector/storage
-      - ./collector/hotdir:/app/collector/hotdir
+      - './collector/storage:/app/collector/storage'
+      - './collector/hotdir:/app/collector/hotdir'
     depends_on:
       - postgres
       - redis
@@ -88,23 +86,19 @@ services:
       - coolify.healthcheck.enabled=true
       - coolify.monitoring.enabled=true
       - coolify.environment=production
-      - coolify.framework=nodejs      - coolify.logging.enabled=true
+      - 'coolify.framework=nodejs      - coolify.logging.enabled=true'
   server:
-    build:
-      context: .
-      dockerfile: server/Dockerfile
+    image: 'ghcr.io/afrinity-tech/mutumwa-ai-server:latest'
     container_name: mutumwa-ai-server
-    ports:
-      - "${SERVER_PORT:-3001}:3001"
     environment:
-      <<: *common-variables
+      NODE_ENV: '${NODE_ENV:-production}'
       PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: ${DB_USER:-mutumwa_admin}
-      DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-      DB_NAME: ${DB_NAME:-mutumwa_ai}
-      REDIS_URL: redis://redis:6379
+      DB_USER: '${DB_USER:-mutumwa_admin}'
+      DB_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
+      DB_NAME: '${DB_NAME:-mutumwa_ai}'
+      REDIS_URL: 'redis://redis:6379'
     depends_on:
       postgres:
         condition: service_healthy
@@ -122,17 +116,13 @@ services:
       - coolify.monitoring.enabled=true
       - coolify.environment=production
       - coolify.framework=nodejs
-      - coolify.logging.enabled=true      - coolify.buildType=dockerfile
+      - 'coolify.logging.enabled=true      - coolify.buildType=dockerfile'
   frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    image: 'ghcr.io/afrinity-tech/mutumwa-ai-frontend:latest'
     container_name: mutumwa-ai-frontend
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      <<: *common-variables
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NODE_ENV: '${NODE_ENV:-production}'
+      NEXT_PUBLIC_API_URL: '${NEXT_PUBLIC_API_URL:-http://localhost:3001}'
     depends_on:
       - server
     restart: unless-stopped
@@ -151,7 +141,6 @@ services:
       - coolify.buildType=dockerfile
       - coolify.public=true
       - coolify.proxy.enabled=true
-
 volumes:
   postgres_data:
     labels:
@@ -164,7 +153,6 @@ volumes:
       - coolify.managed=true
       - coolify.type=volume
       - coolify.service=redis
-
 networks:
   default:
     labels:
