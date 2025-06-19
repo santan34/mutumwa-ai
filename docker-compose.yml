@@ -4,9 +4,9 @@ x-common-variables: &common-variables
   NODE_ENV: ${NODE_ENV:-production}
 
 x-database-variables: &database-variables
-  POSTGRES_USER: ${DB_USER:-mutumwa_admin}
+  POSTGRES_USER: ${POSTGRES_USER:-mutumwa_admin}
   POSTGRES_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-  POSTGRES_DB: ${DB_NAME:-mutumwa_ai}
+  POSTGRES_DB: ${POSTGRES_DB:-mutumwa_ai}
 
 services:
   postgres:
@@ -19,7 +19,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - 'pg_isready -U ${DB_USER:-mutumwa_admin} -d ${DB_NAME:-mutumwa_ai}'
+        - 'pg_isready -U ${POSTGRES_USER:-mutumwa_admin} -d ${POSTGRES_DB:-mutumwa_ai}'
       interval: 5s
       timeout: 20s
       retries: 10
@@ -78,6 +78,11 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8888 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     labels:
       - coolify.managed=true
       - coolify.type=service
@@ -101,9 +106,9 @@ services:
       PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: ${DB_USER:-mutumwa_admin}
+      POSTGRES_USER: ${POSTGRES_USER:-mutumwa_admin}
       DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
-      DB_NAME: ${DB_NAME:-mutumwa_ai}
+      POSTGRES_DB: ${POSTGRES_DB:-mutumwa_ai}
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres:
@@ -111,6 +116,11 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     labels:
       - coolify.managed=true
       - coolify.type=service
@@ -136,6 +146,11 @@ services:
     depends_on:
       - server
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     labels:
       - coolify.managed=true
       - coolify.type=service

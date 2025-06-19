@@ -67,8 +67,8 @@ NODE_ENV=development
 PORT=3001
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=mutumwa_ai_dev
-DB_USER=postgres
+POSTGRES_DB=mutumwa_ai_dev
+POSTGRES_USER=postgres
 DB_PASSWORD=password
 ```
 

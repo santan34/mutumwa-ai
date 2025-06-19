@@ -2,9 +2,9 @@ version: '3.8'
 x-common-variables:
   NODE_ENV: '${NODE_ENV:-production}'
 x-database-variables:
-  POSTGRES_USER: '${DB_USER:-mutumwa_admin}'
+  POSTGRES_USER: '${POSTGRES_USER:-mutumwa_admin}'
   POSTGRES_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
-  POSTGRES_DB: '${DB_NAME:-mutumwa_ai}'
+  POSTGRES_DB: '${POSTGRES_DB:-mutumwa_ai}'
 services:
   postgres:
     image: 'postgres:15'
@@ -12,13 +12,13 @@ services:
     volumes:
       - 'postgres_data:/var/lib/postgresql/data'
     environment:
-      POSTGRES_USER: '${DB_USER:-mutumwa_admin}'
+      POSTGRES_USER: '${POSTGRES_USER:-mutumwa_admin}'
       POSTGRES_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
-      POSTGRES_DB: '${DB_NAME:-mutumwa_ai}'
+      POSTGRES_DB: '${POSTGRES_DB:-mutumwa_ai}'
     healthcheck:
       test:
         - CMD-SHELL
-        - 'pg_isready -U ${DB_USER:-mutumwa_admin} -d ${DB_NAME:-mutumwa_ai}'
+        - 'pg_isready -U ${POSTGRES_USER:-mutumwa_admin} -d ${POSTGRES_DB:-mutumwa_ai}'
       interval: 5s
       timeout: 20s
       retries: 10
@@ -86,7 +86,8 @@ services:
       - coolify.healthcheck.enabled=true
       - coolify.monitoring.enabled=true
       - coolify.environment=production
-      - 'coolify.framework=nodejs      - coolify.logging.enabled=true'
+      - coolify.framework=nodejs
+      - coolify.logging.enabled=true
   server:
     image: 'ghcr.io/afrinity-tech/mutumwa-ai-server:latest'
     container_name: mutumwa-ai-server
@@ -95,9 +96,9 @@ services:
       PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: '${DB_USER:-mutumwa_admin}'
+      POSTGRES_USER: '${POSTGRES_USER:-mutumwa_admin}'
       DB_PASSWORD: '${DB_PASSWORD:-mutumwa_secure_pass}'
-      DB_NAME: '${DB_NAME:-mutumwa_ai}'
+      POSTGRES_DB: '${POSTGRES_DB:-mutumwa_ai}'
       REDIS_URL: 'redis://redis:6379'
     depends_on:
       postgres:
@@ -116,7 +117,7 @@ services:
       - coolify.monitoring.enabled=true
       - coolify.environment=production
       - coolify.framework=nodejs
-      - 'coolify.logging.enabled=true      - coolify.buildType=dockerfile'
+      - coolify.logging.enabled=true
   frontend:
     image: 'ghcr.io/afrinity-tech/mutumwa-ai-frontend:latest'
     container_name: mutumwa-ai-frontend

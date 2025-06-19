@@ -12,8 +12,8 @@ export async function createTenantSchema(orgId: string) {
 
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: entityClasses,
-    dbName: process.env.DB_NAME,
-    user: process.env.DB_USER,
+    dbName: process.env.POSTGRES_DB,
+    user: process.env.POSTGRES_USER,
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
