@@ -10,7 +10,6 @@ export const tenantResolverMiddleware = async (
   try {
     // Change this line to use lowercase header name
     const domain = req.headers["x-tenant-domain"] as string;
-    console.log("Tenant Resolver Middleware - Domain:", domain);
     if (!domain) {
       req.em = orm.em.fork();
       return next();
