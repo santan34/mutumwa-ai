@@ -45,6 +45,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(tenantResolverMiddleware);
 
+
+// Health check endpoint
+app.get("/api/health", (_req: express.Request, res: express.Response) => {
+  res.status(200).json({ status: "ok" });
+});
 // Serve Swagger UI static files without CORS
 app.use(
   "/api-docs",
