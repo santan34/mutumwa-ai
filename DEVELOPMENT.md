@@ -65,8 +65,8 @@ npm run lint
 ```env
 NODE_ENV=development
 PORT=3001
-DB_HOST=localhost
-DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 POSTGRES_DB=mutumwa_ai_dev
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password

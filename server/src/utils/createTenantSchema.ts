@@ -15,8 +15,8 @@ export async function createTenantSchema(orgId: string) {
     dbName: process.env.POSTGRES_DB,
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
+    host: process.env.POSTGRES_HOST,
+    port: Number(process.env.POSTGRES_PORT),
     driver: PostgreSqlDriver,
   });
 

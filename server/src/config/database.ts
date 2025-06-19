@@ -5,8 +5,8 @@ import "dotenv/config";
 const config: Options<PostgreSqlDriver> = {
   entities: ["./dist/entities"],
   dbName: process.env.POSTGRES_DB,
-  host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "5432"),
+  host: process.env.POSTGRES_HOST || "localhost",
+  port: parseInt(process.env.POSTGRES_PORT || "5432"),
   driver: PostgreSqlDriver,
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,

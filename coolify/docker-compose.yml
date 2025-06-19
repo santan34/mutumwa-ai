@@ -94,8 +94,8 @@ services:
     environment:
       NODE_ENV: '${NODE_ENV:-production}'
       PORT: 3001
-      DB_HOST: postgres
-      DB_PORT: 5432
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
       POSTGRES_USER: '${POSTGRES_USER:-mutumwa_admin}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-mutumwa_secure_pass}'
       POSTGRES_DB: '${POSTGRES_DB:-mutumwa_ai}'

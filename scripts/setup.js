@@ -27,8 +27,8 @@ NODE_ENV=development
 PORT=3001
 
 # Database Configuration (PostgreSQL)
-DB_HOST=localhost
-DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 POSTGRES_DB=mutumwa_ai_dev
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
@@ -222,7 +222,7 @@ CREATE DATABASE mutumwa_ai_dev;
 ## Environment Variables
 
 ### Server (\`server/.env.development\`)
-- \`DB_HOST\`, \`DB_PORT\`, \`POSTGRES_DB\`, \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\` - Database configuration
+- \`POSTGRES_HOST\`, \`POSTGRES_PORT\`, \`POSTGRES_DB\`, \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\` - Database configuration
 
 ### Collector (\`collector/.env.development\`)  
 - \`FIRECRAWL_API_KEY\` - For web crawling functionality (optional)

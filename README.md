@@ -64,7 +64,7 @@ CREATE DATABASE mutumwa_ai_dev;
 ## Environment Variables
 
 ### Server (`server/.env.development`)
-- `DB_HOST`, `DB_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` - Database configuration
+- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` - Database configuration
 
 ### Collector (`collector/.env.development`)  
 - `FIRECRAWL_API_KEY` - For web crawling functionality (optional)
