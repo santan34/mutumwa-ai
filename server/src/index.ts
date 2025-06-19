@@ -14,6 +14,7 @@ import { planFeatureRoutes } from "./routes/public/planFeatures.routes";
 import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
 import { organisationPlanRoutes } from "./routes/public/organisationPlan.routes";
 import { organisationalPermissionRoutes } from "./routes/public/organisationalPermission.routes";
+import { workspacePermissionRoutes } from "./routes/public/workspacePermissions.routes";
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use("/api/plans", planRoutes);
 app.use("/api/features", featureRoutes);
 app.use("/api/plan-features", planFeatureRoutes);
 app.use("/api/permissions/organisational", organisationalPermissionRoutes);
+app.use("/api/permissions/workspace", workspacePermissionRoutes);
 app.use("/api/api-usage", apiUsageRoutes);
 app.use("/api/organisation-plans", organisationPlanRoutes);
 
