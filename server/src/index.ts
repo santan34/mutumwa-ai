@@ -15,6 +15,7 @@ import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
 import { organisationPlanRoutes } from "./routes/public/organisationPlan.routes";
 import { organisationalPermissionRoutes } from "./routes/public/organisationalPermission.routes";
 import { workspacePermissionRoutes } from "./routes/public/workspacePermissions.routes";
+import authRoutes from "./routes/public/auth.routes";
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use("/api/permissions/organisational", organisationalPermissionRoutes);
 app.use("/api/permissions/workspace", workspacePermissionRoutes);
 app.use("/api/api-usage", apiUsageRoutes);
 app.use("/api/organisation-plans", organisationPlanRoutes);
+app.use("/api/auth", authRoutes); // Add auth routes
 
 // Tenant-specific routes
 

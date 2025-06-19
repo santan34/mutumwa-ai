@@ -11,3 +11,4 @@ export * from './WorkspaceRole';
 export * from './WorkspaceRolePermissions';
 export * from './WorkspaceUser';
 export * from './WorkspaceUserRole';
+export * from './MagicLinkToken';
