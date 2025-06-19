@@ -59,8 +59,8 @@ services:
       - coolify.port=6379
   collector:
     build:
-      context: .
-      dockerfile: collector/Dockerfile
+      context: ./collector
+      dockerfile: Dockerfile
     container_name: mutumwa-ai-collector
     ports:
       - "${COLLECTOR_PORT:-8888}:8888"
@@ -96,8 +96,8 @@ services:
       - coolify.framework=nodejs      - coolify.logging.enabled=true
   server:
     build:
-      context: .
-      dockerfile: server/Dockerfile
+      context: ./server
+      dockerfile: Dockerfile
     container_name: mutumwa-ai-server
     ports:
       - "${SERVER_PORT:-3001}:3001"
@@ -135,8 +135,8 @@ services:
       - coolify.logging.enabled=true      - coolify.buildType=dockerfile
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: mutumwa-ai-frontend
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
