@@ -9,7 +9,7 @@ const config: Options<PostgreSqlDriver> = {
   port: parseInt(process.env.DB_PORT || "5432"),
   driver: PostgreSqlDriver,
   user: process.env.POSTGRES_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.POSTGRES_PASSWORD,
   entitiesTs: ["./src/entities"],
   debug: true,
   pool: {

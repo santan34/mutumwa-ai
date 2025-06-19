@@ -31,7 +31,7 @@ DB_HOST=localhost
 DB_PORT=5432
 POSTGRES_DB=mutumwa_ai_dev
 POSTGRES_USER=postgres
-DB_PASSWORD=password
+POSTGRES_PASSWORD=password
 
 # Optional: JWT Secret for authentication
 # JWT_SECRET=your_jwt_secret_here
@@ -222,7 +222,7 @@ CREATE DATABASE mutumwa_ai_dev;
 ## Environment Variables
 
 ### Server (\`server/.env.development\`)
-- \`DB_HOST\`, \`DB_PORT\`, \`POSTGRES_DB\`, \`POSTGRES_USER\`, \`DB_PASSWORD\` - Database configuration
+- \`DB_HOST\`, \`DB_PORT\`, \`POSTGRES_DB\`, \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\` - Database configuration
 
 ### Collector (\`collector/.env.development\`)  
 - \`FIRECRAWL_API_KEY\` - For web crawling functionality (optional)

@@ -69,7 +69,7 @@ DB_HOST=localhost
 DB_PORT=5432
 POSTGRES_DB=mutumwa_ai_dev
 POSTGRES_USER=postgres
-DB_PASSWORD=password
+POSTGRES_PASSWORD=password
 ```
 
 ### Collector (`.env.development`)

@@ -5,7 +5,7 @@ x-common-variables: &common-variables
 
 x-database-variables: &database-variables
   POSTGRES_USER: ${POSTGRES_USER:-mutumwa_admin}
-  POSTGRES_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mutumwa_secure_pass}
   POSTGRES_DB: ${POSTGRES_DB:-mutumwa_ai}
 
 services:
@@ -107,7 +107,7 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER:-mutumwa_admin}
-      DB_PASSWORD: ${DB_PASSWORD:-mutumwa_secure_pass}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mutumwa_secure_pass}
       POSTGRES_DB: ${POSTGRES_DB:-mutumwa_ai}
       REDIS_URL: redis://redis:6379
     depends_on:

@@ -94,7 +94,7 @@ jobs:
         DB_PORT: 5432
         POSTGRES_DB: mutumwa_ai_test
         POSTGRES_USER: postgres
-        DB_PASSWORD: password
+        POSTGRES_PASSWORD: password
         DATABASE_URL: postgresql://postgres:password@localhost:5432/mutumwa_ai_test
 
     - name: Run server tests (if available)
@@ -110,7 +110,7 @@ jobs:
         DB_PORT: 5432
         POSTGRES_DB: mutumwa_ai_test
         POSTGRES_USER: postgres
-        DB_PASSWORD: password
+        POSTGRES_PASSWORD: password
         DATABASE_URL: postgresql://postgres:password@localhost:5432/mutumwa_ai_test
         REDIS_URL: redis://localhost:6379
 
