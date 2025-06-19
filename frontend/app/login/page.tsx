@@ -15,23 +15,34 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [tenant, setTenant] = useState("")
   const [tenantInfo, setTenantInfo] = useState<{ name: string; users: string[] } | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
+    console.log("🔐 Login Page Debug:")
+    console.log("  - Search params:", Object.fromEntries(searchParams.entries()))
+    
     // Get tenant from URL params (set by middleware)
     const tenantParam = searchParams.get("tenant")
+    console.log("  - Tenant param from searchParams.get('tenant'):", tenantParam)
+    
     if (tenantParam) {
       setTenant(tenantParam)
       const info = (tenantData.tenants as Record<string, { name: string; users: string[] }>)[tenantParam]
       setTenantInfo(info || null)
+      console.log("  - Tenant info found:", info)
+    } else {
+      console.log("  - No tenant param found")
     }
 
+    setIsInitialized(true)
+    
     // Check if user is already authenticated
     checkExistingSession()
   }, [searchParams])
 
   const checkExistingSession = async () => {
     const session = await getSession()
-    if (session?.user?.email) {
+    if (session?.user?.email && tenant) {
       await handlePostAuth(session.user.email)
     }
   }
@@ -94,7 +105,22 @@ export default function LoginPage() {
     }
   }
 
+  // Show loading while initializing
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex justify-center items-center p-8">
+            <div>Loading...</div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show error only after initialization is complete
   if (!tenant) {
+    console.log("  ❌ No tenant found after initialization - showing invalid access")
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -108,6 +134,8 @@ export default function LoginPage() {
       </div>
     )
   }
+
+  console.log("  ✅ Tenant found after initialization, showing login form")
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

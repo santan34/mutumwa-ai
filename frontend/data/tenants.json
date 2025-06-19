@@ -2,7 +2,7 @@
   "tenants": {
     "acme": {
       "name": "Acme Corporation",
-      "users": ["john@acme.com", "jane@acme.com", "admin@acme.com"]
+      "users": ["re@acme.com", "jane@acme.com", "admin@acme.com"]
     },
     "techcorp": {
       "name": "Tech Corporation",
@@ -10,7 +10,7 @@
     },
     "startup": {
       "name": "Startup Inc",
-      "users": ["founder@startup.com", "dev@startup.com"]
+      "users": ["takundaveni@gmail.com", "dev@startup.com"]
     }
   }
 }
