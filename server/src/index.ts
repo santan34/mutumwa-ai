@@ -13,6 +13,7 @@ import { userRoutes } from "./routes/tenant/user.routes";
 import { planFeatureRoutes } from "./routes/public/planFeatures.routes";
 import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
 import { organisationPlanRoutes } from "./routes/public/organisationPlan.routes";
+import { organisationalPermissionRoutes } from "./routes/public/organisationalPermission.routes";
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use("/api/system-admins", systemAdminRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/features", featureRoutes);
 app.use("/api/plan-features", planFeatureRoutes);
+app.use("/api/permissions/organisational", organisationalPermissionRoutes);
 app.use("/api/api-usage", apiUsageRoutes);
 app.use("/api/organisation-plans", organisationPlanRoutes);
 
