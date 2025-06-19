@@ -1,6 +1,6 @@
 import { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
 import { Organisation } from "../../entities/public/Organisation";
-import { OrganisationService } from "../organisation.service";
+import { OrganisationService } from "../public/organisation.service";
 
 
 const mockFind = jest.fn().mockImplementation(() => Promise.resolve([])) as jest.Mock;
@@ -115,13 +115,31 @@ describe("OrganisationService", () => {
 
   describe("getById", () => {
     it("should return organisation by id", async () => {
-      const mockOrg = { id: "1", name: "Test Org" };
+      const mockOrg = {
+        id: "1",
+        name: "Test Org",
+        domain: "test.com",
+        sector: "Technology",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null};
       mockFindOne.mockResolvedValue(mockOrg);
       const result = await OrganisationService.getById(mockEntityManager, "1");
       expect(result).toEqual(mockOrg);
       expect(mockFindOne).toHaveBeenCalledWith(Organisation, { id: "1" });
     });
 
+    it("should not return soft-deleted organizations", async () => {
+      mockFindOne.mockResolvedValueOnce({ 
+        id: "1", 
+        deletedAt: new Date() 
+      });
+
+      await expect(OrganisationService.getById(mockEntityManager, "1"))
+        .rejects
+        .toThrow("Organisation not found");
+    });
+    
     it("should throw error when organisation not found", async () => {
       mockFindOne.mockResolvedValue(null);
 
@@ -132,11 +150,27 @@ describe("OrganisationService", () => {
   });
 
   describe("update", () => {
+    const updateData = {
+      name: "Updated Org",
+      sector: "New Sector"
+    };
+
     it("should update organisation", async () => {
-      const mockOrg = { id: "1", name: "Old Name" };
-      const updateData = { name: "New Name" };
+      const mockOrg = {
+        id: "1",
+        name: "Old Name",
+        domain: "old.com",
+        sector: "Old Sector",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null
+      };
       mockFindOne.mockResolvedValue(mockOrg);
-      mockAssign.mockImplementation((org, data) => ({ ...org, ...data, updatedAt: new Date() }));
+      mockAssign.mockImplementation((target, source) => ({
+        ...target,
+        ...source,
+        updatedAt: new Date()
+      }));
 
       const result = await OrganisationService.update(mockEntityManager, "1", updateData);
 
@@ -146,6 +180,24 @@ describe("OrganisationService", () => {
       }));
       expect(mockFlush).toHaveBeenCalled();
       expect(mockAssign).toHaveBeenCalledWith(mockOrg, expect.objectContaining(updateData));
+    });
+
+    it("should reject updates to non-existent organizations", async () => {
+      mockFindOne.mockResolvedValueOnce(null);
+      
+      await expect(OrganisationService.update(mockEntityManager, "fake-id", updateData))
+        .rejects
+        .toThrow("Organisation with id fake-id not found");
+    });
+
+    it("should prevent updating to existing domain name", async () => {
+      mockFindOne.mockResolvedValueOnce({ id: "1", domain: "existing.com" });
+      
+      await expect(OrganisationService.update(
+        mockEntityManager,
+        "2",
+        { domain: "existing.com" }
+      )).rejects.toThrow("Domain already in use");
     });
   });
 
@@ -162,6 +214,83 @@ describe("OrganisationService", () => {
           deletedAt: expect.any(Date),
         })
       );
+    });
+
+    it("should prevent double soft-deletion", async () => {
+      mockFindOne.mockResolvedValueOnce({ 
+        id: "1", 
+        deletedAt: new Date() 
+      });
+
+      await expect(OrganisationService.softDelete(mockEntityManager, "1"))
+        .rejects
+        .toThrow("Organisation already deleted");
+    });
+
+    it("should maintain deletion timestamp accuracy", async () => {
+      const now = new Date();
+      jest.useFakeTimers().setSystemTime(now);
+      
+      const org = { id: "1", name: "Test Org" };
+      mockFindOne.mockResolvedValueOnce(org);
+
+      await OrganisationService.softDelete(mockEntityManager, "1");
+
+      expect(mockAssign).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          deletedAt: now
+        })
+      );
+    });
+  });
+
+  describe("activate", () => {
+    it("should only activate soft-deleted organizations", async () => {
+      mockFindOne.mockResolvedValueOnce({ 
+        id: "1", 
+        deletedAt: null 
+      });
+
+      await expect(OrganisationService.activate(mockEntityManager, "1"))
+        .rejects
+        .toThrow("Organisation is not deleted");
+    });
+
+    it("should clear deletedAt timestamp", async () => {
+      const org = { id: "1", deletedAt: new Date() };
+      mockFindOne.mockResolvedValueOnce(org);
+
+      await OrganisationService.activate(mockEntityManager, "1");
+
+      expect(mockAssign).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          deletedAt: null
+        })
+      );
+    });
+  });
+
+  describe("getSoftDeleted", () => {
+    it("should only return soft-deleted organizations", async () => {
+      const mockOrgs = [
+        { id: "1", deletedAt: new Date() },
+        { id: "2", deletedAt: new Date() }
+      ];
+      mockFind.mockResolvedValueOnce(mockOrgs);
+
+      const result = await OrganisationService.getSoftDeleted(mockEntityManager);
+
+      expect(result.every(org => org.deletedAt !== null)).toBeTruthy();
+    });
+
+    it("should return empty array when no deleted organizations exist", async () => {
+      mockFind.mockResolvedValueOnce([]);
+
+      const result = await OrganisationService.getSoftDeleted(mockEntityManager);
+
+      expect(result).toHaveLength(0);
     });
   });
 });

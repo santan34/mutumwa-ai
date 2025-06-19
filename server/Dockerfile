@@ -4,14 +4,14 @@ FROM node:18-alpine
 WORKDIR /app/server
 
 # Copy package files
-COPY server/package*.json ./
-COPY server/tsconfig.json ./
+COPY package*.json ./
+COPY tsconfig.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy source code
-COPY server/ .
+COPY . .
 
 # Build the application
 RUN npm run build

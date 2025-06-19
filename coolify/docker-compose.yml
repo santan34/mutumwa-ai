@@ -75,6 +75,11 @@ services:
     depends_on:
       - postgres
       - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8888 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
     labels:
       - coolify.managed=true
@@ -94,8 +99,8 @@ services:
     environment:
       NODE_ENV: '${NODE_ENV:-production}'
       PORT: 3001
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      DB_HOST: postgres
+      DB_PORT: 5432
       POSTGRES_USER: '${POSTGRES_USER:-mutumwa_admin}'
       POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-mutumwa_secure_pass}'
       POSTGRES_DB: '${POSTGRES_DB:-mutumwa_ai}'
@@ -105,6 +110,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
     labels:
       - coolify.managed=true
@@ -125,8 +135,12 @@ services:
       NODE_ENV: '${NODE_ENV:-production}'
       NEXT_PUBLIC_API_URL: '${NEXT_PUBLIC_API_URL:-http://localhost:3001}'
     depends_on:
-      - server
-    restart: unless-stopped
+      - server    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     labels:
       - coolify.managed=true
       - coolify.type=service
