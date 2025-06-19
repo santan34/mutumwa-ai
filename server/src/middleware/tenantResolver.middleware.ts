@@ -8,16 +8,19 @@ export const tenantResolverMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const domain = req.headers.host || "";
-
-    if (!domain) throw new Error("Missing domain");
+    // Change this line to use lowercase header name
+    const domain = req.headers["x-tenant-domain"] as string;
+    console.log("Tenant Resolver Middleware - Domain:", domain);
+    if (!domain) {
+      req.em = orm.em.fork();
+      return next();
+    }
 
     const baseEm = orm.em.fork();
     const org = await baseEm.findOne(Organisation, { domain });
 
     if (!org) {
-      req.em = baseEm;
-      return next();
+      throw new Error("Organisation not found for this domain");
     }
 
     const tenantSchema = `tenant_${org.id}`;
