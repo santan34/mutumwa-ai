@@ -71,6 +71,10 @@ app.use("/api/organisation-plans", organisationPlanRoutes);
 
 app.use("/api/tenant/users", userRoutes);
 
+app.all("*", function (_: express.Request, response: express.Response) {
+  response.sendStatus(200);
+});
+
 // Error handling middleware
 app.use(
   (
@@ -86,9 +90,3 @@ app.use(
     });
   }
 );
-
-const PORT = process.env.PORT || 3001;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
