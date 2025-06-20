@@ -15,6 +15,7 @@ import { apiUsageRoutes } from "./routes/public/apiUsage.routes";
 import { organisationPlanRoutes } from "./routes/public/organisationPlan.routes";
 import { organisationalPermissionRoutes } from "./routes/public/organisationalPermission.routes";
 import { workspacePermissionRoutes } from "./routes/public/workspacePermissions.routes";
+import authRoutes from "./routes/public/auth.routes";
 
 const app = express();
 
@@ -45,6 +46,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(tenantResolverMiddleware);
 
+
+// Health check endpoint
+app.get("/api/health", (_req: express.Request, res: express.Response) => {
+  res.status(200).json({ status: "ok" });
+});
 // Serve Swagger UI static files without CORS
 app.use(
   "/api-docs",
@@ -66,6 +72,7 @@ app.use("/api/permissions/organisational", organisationalPermissionRoutes);
 app.use("/api/permissions/workspace", workspacePermissionRoutes);
 app.use("/api/api-usage", apiUsageRoutes);
 app.use("/api/organisation-plans", organisationPlanRoutes);
+app.use("/api/auth", authRoutes); // Add auth routes
 
 // Tenant-specific routes
 

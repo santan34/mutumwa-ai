@@ -5,11 +5,12 @@
   "private": true,
   "engines": {
     "node": ">=18.12.1"
-  },  "scripts": {
+  },
+  "scripts": {
     "setup": "node scripts/setup.js",
     "install:all": "npm install && cd collector &&  npm install --legacy-peer-deps && cd ../frontend && npm install && cd ../server && npm install && cd ..",
     "dev:server": "cd server && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev", 
+    "dev:frontend": "cd frontend && npm run dev",
     "dev:collector": "cd collector && npm run dev",
     "build:frontend": "cd frontend && npm run build",
     "build:server": "cd server && npm run build",
@@ -27,11 +28,18 @@
   },
   "keywords": [
     "ai",
-    "document-processing", 
+    "document-processing",
     "nextjs",
     "express",
     "typescript"
   ],
   "author": "Mutumwa AI Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@langchain/community": "^0.3.46",
+    "@langchain/core": "^0.3.59",
+    "@langchain/langgraph": "^0.3.4",
+    "@langchain/langgraph-cli": "^0.0.40",
+    "@langchain/openai": "^0.5.13"
+  }
 }

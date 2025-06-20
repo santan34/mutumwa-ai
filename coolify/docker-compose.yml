@@ -86,8 +86,7 @@ services:
       - coolify.healthcheck.enabled=true
       - coolify.monitoring.enabled=true
       - coolify.environment=production
-      - coolify.framework=nodejs
-      - coolify.logging.enabled=true
+      - 'coolify.framework=nodejs      - coolify.logging.enabled=true'
   server:
     image: 'ghcr.io/afrinity-tech/mutumwa-ai-server:latest'
     container_name: mutumwa-ai-server
@@ -117,7 +116,7 @@ services:
       - coolify.monitoring.enabled=true
       - coolify.environment=production
       - coolify.framework=nodejs
-      - coolify.logging.enabled=true
+      - 'coolify.logging.enabled=true      - coolify.buildType=dockerfile'
   frontend:
     image: 'ghcr.io/afrinity-tech/mutumwa-ai-frontend:latest'
     container_name: mutumwa-ai-frontend
