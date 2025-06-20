@@ -17,11 +17,17 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.email = user.email
       }
+      if (account?.id_token) {
+        console.log('Google ID Token:', account.id_token);
+        // Store it in the token object if needed
+        token.id_token = account.id_token;
+      }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token}) {
       if (session.user) {
         session.user.email = token.email as string
+        session.user.idToken = token.id_token as string  // Add this line to pass the token
       }
       return session
     },

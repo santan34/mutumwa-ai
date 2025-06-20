@@ -173,10 +173,52 @@ export default function DashboardPage() {
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Each organization has its own subdomain (e.g., acme.company.com)</li>
                   <li>• Users authenticate with Google OAuth</li>
-                  <li>• Access is granted based on tenant-specific user lists</li>
+                  <li>• Access is granted based on tenant</li>
                   <li>• All organizations share the same codebase but have isolated access</li>
                 </ul>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6 p-6 bg-white dark:bg-gray-800">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold mb-4">
+              Authentication Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Email
+                </h3>
+                <p className="mt-1">
+                  {session?.user?.email}
+                </p>
+              </div>
+              {session?.user?.idToken && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Google ID Token
+                  </h3>
+                  <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                    <pre className="whitespace-pre-wrap break-all text-sm">
+                      {session.user.idToken}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        if (session.user?.idToken) {
+                          navigator.clipboard.writeText(session.user.idToken)
+                        }
+                      }}
+                      className="mt-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Copy Token
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
