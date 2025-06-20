@@ -33,8 +33,9 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mikro-orm": "^6.4.16",
-    "rate-limiter-flexible": "^7.1.1",
+    "nodemailer": "^7.0.3",
     "reflect-metadata": "^0.2.2",
+    "resend": "^4.6.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0"
