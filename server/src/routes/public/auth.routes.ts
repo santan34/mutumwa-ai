@@ -23,11 +23,16 @@ const router = Router();
  *       type: object
  *       required:
  *         - email
+ *         - purpose
  *       properties:
  *         email:
  *           type: string
  *           format: email
  *           description: User's email address
+ *         purpose:
+ *           type: string
+ *           enum: [login, signup]
+ *           description: Whether this is for login or signup
  *     MagicLinkResponse:
  *       type: object
  *       properties:
@@ -85,12 +90,6 @@ router.post("/magic-link", tenantResolverMiddleware, AuthController.requestMagic
  *           type: string
  *         required: true
  *         description: Magic link token
- *       - in: query
- *         name: tenant
- *         schema:
- *           type: string
- *         required: true
- *         description: Tenant domain
  *       - $ref: '#/components/parameters/TenantDomainHeader'
  *     responses:
  *       200:

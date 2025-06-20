@@ -1,20 +1,30 @@
-import { Entity, PrimaryKey, Property, ManyToOne } from "@mikro-orm/core";
-import { User } from "./User";
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
 import { v4 as uuidv4 } from "uuid";
 
-@Entity({ tableName: "magic_link_tokens" })
+export enum MagicLinkPurpose {
+  LOGIN = "login",
+  SIGNUP = "signup",
+}
+
+@Entity({ tableName: "magic_links" })
 export class MagicLinkToken {
   @PrimaryKey({ type: "uuid" })
   id: string = uuidv4();
 
-  @ManyToOne(() => User)
-  user!: User;
-
   @Property()
+  email!: string;
+
+  @Property({ unique: true })
   token!: string;
+
+  @Property({ type: "string", check: "purpose IN ('login', 'signup')" })
+  purpose!: MagicLinkPurpose;
 
   @Property()
   expiresAt!: Date;
+
+  @Property({ type: "boolean", nullable: true })
+  used?: boolean;
 
   @Property({ name: "created_at" })
   createdAt: Date = new Date();
